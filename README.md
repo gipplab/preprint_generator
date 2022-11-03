@@ -1,5 +1,11 @@
 # Enhanced Preprint Generator
 
+## Useful resources
+
+ - https://pdf-lib.js.org/ (edit pdfs)
+ - https://react-pdf.org/ (view pdfs)
+ - https://expressjs.com/de/ (backend: store and search meta tags)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
