@@ -52,12 +52,12 @@ class App extends Component<AppProps, AppState> {
         this.callAPI();
     }
 
-    async editPDF(pdf: PDFDocument) {
+    async editPDF(pdf: PDFFile) {
         console.log(this.state.file)
-        const pages = pdf.getPages()
+        const pages = pdf.file.getPages()
         pages[0].drawText('You can modify PDFs too!')
-        const pdfBytes = await pdf.save()
-        saveByteArray("Sample Report", pdfBytes);
+        const pdfBytes = await pdf.file.save()
+        saveByteArray(pdf.name, pdfBytes);
     }
 
     render() {
@@ -73,7 +73,7 @@ class App extends Component<AppProps, AppState> {
                             this.setState({
                                 file: pdfFile
                             })
-                            await this.editPDF(pdfFile.file)
+                            await this.editPDF(pdfFile)
 
                         }} name="file"
                                       types={fileTypes}/>}
