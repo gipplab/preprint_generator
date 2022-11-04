@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {FileUploader} from "react-drag-drop-files";
 import {PDFDocument} from 'pdf-lib'
+import {PDFFileForm} from "./PDFFileForm";
 
 const fileTypes = ["PDF"];
 
@@ -17,6 +17,11 @@ interface AppState {
 interface PDFFile {
     name: string;
     file: PDFDocument;
+    title: string;
+    author: string;
+    venue: string;
+    pages: number;
+    date: Date;
 }
 
 const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
@@ -30,8 +35,7 @@ function saveByteArray(reportName: string, byte: Uint8Array) {
     var blob = new Blob([byte], {type: "application/pdf"});
     var link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    var fileName = reportName;
-    link.download = fileName;
+    link.download = reportName;
     link.click();
 };
 
@@ -57,19 +61,30 @@ class App extends Component<AppProps, AppState> {
         const pages = pdf.file.getPages()
         pages[0].drawText('You can modify PDFs too!')
         const pdfBytes = await pdf.file.save()
-        saveByteArray(pdf.name, pdfBytes);
+        console.log(pdf.file.getTitle())
+        //saveByteArray(pdf.name, pdfBytes);
     }
 
     render() {
         return (
             <div className="App">
                 <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo"/>
+                    <button onClick={() => {
+                        this.setState({file: undefined})
+                    }}>Reset Document
+                    </button>
                     <p className="App-intro">{this.state.apiResponse}</p>
                     {(!this.state.file) &&
                         <FileUploader handleChange={async (file: any) => {
-                            console.log(await toBase64(file))
-                            let pdfFile = {name: file.name, file: await PDFDocument.load(await toBase64(file))}
+                            let pdfDoc = await PDFDocument.load(await toBase64(file))
+                            let pdfFile: PDFFile = {
+                                author: pdfDoc.getAuthor() || "",
+                                title: pdfDoc.getTitle() || "",
+                                venue: pdfDoc.getProducer() || "",
+                                date: pdfDoc.getCreationDate() || new Date(),
+                                pages: pdfDoc.getPageCount(),
+                                name: file.name, file: pdfDoc
+                            }
                             this.setState({
                                 file: pdfFile
                             })
@@ -78,6 +93,11 @@ class App extends Component<AppProps, AppState> {
                         }} name="file"
                                       types={fileTypes}/>}
                     {this.state.file && <div>{this.state.file.name}</div>}
+                    {this.state.file &&
+                        <PDFFileForm onSubmit={(file) => console.log(file)} title={this.state.file.title}
+                                     author={this.state.file.author}
+                                     venue={this.state.file.venue} date={this.state.file.date}
+                                     pages={this.state.file.pages}/>}
                 </header>
             </div>
         );
