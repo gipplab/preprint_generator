@@ -7,19 +7,31 @@ export interface PDFFile {
 }
 
 export interface PDFInfo {
+    artTitle: string;
+
     title: string;
-    author: string;
-    venue: string;
+    volume?: number;
+    issn?: string;
+    number?: number;
+    journal?: string;
+    doi?: string;
+    author?: string;
     pages: number;
     date: Date;
 }
 
-export function parsePDF(file: PDFDocument): PDFInfo {
-    let author = file.getAuthor() || ""
-    let title = file.getTitle() || ""
+export function parsePDF(file: PDFDocument, name: string): PDFInfo {
+    let author = file.getAuthor()
+    let title = file.getTitle() || name.substring(0, name.length - 4)
     let pages = file.getPageCount()
     let date = file.getCreationDate() || new Date()
-    console.log(file.getPage(0))
+    let volume
+    let issn
+    let number
+    let journal
+    let doi
+    let artTitle = ((author || title).replace(/\s/g, '')) + date.getFullYear()
 
-    return {author: author, date: date, pages: pages, venue: "", title: title}
+
+    return {author, date, pages, artTitle, title, volume, issn, number, journal, doi}
 }

@@ -55,7 +55,7 @@ class App extends Component<AppProps, AppState> {
                             let pdfFile: PDFFile = {
                                 name: file.name,
                                 file: pdfDoc,
-                                info: parsePDF(pdfDoc)
+                                info: parsePDF(pdfDoc, file.name)
                             }
                             this.setState({
                                 file: pdfFile
@@ -67,7 +67,11 @@ class App extends Component<AppProps, AppState> {
                     {this.state.file &&
                         <PDFFileForm onSubmit={async (file) => {
                             console.log(file)
-                            await createBibTexAnnotation(this.state.file!)
+                            await createBibTexAnnotation({
+                                file: this.state.file!.file,
+                                name: this.state.file!.name,
+                                info: file
+                            })
                         }} info={this.state.file.info}/>}
                 </header>
             </div>

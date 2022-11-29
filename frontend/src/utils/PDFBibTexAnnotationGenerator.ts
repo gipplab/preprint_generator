@@ -57,7 +57,17 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, info: PDF
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
-    let bibAnnotationText = `@articel{${"artTitle"},\n title={${"dkjwahdiwahdkaw"}},\n volume={${"volume"}},\n issn={${"issn"}},\n number={${"number"}},\n journal={${"journal"}},\n doi={${"doi"}},\n author={${"author"}},\n year={${"year"}},\n pages={${"pages"}}\n}`
+    let bibAnnotationText = `@articel{${info.artTitle},\n title={${info.title}}`
+    if (info.doi != undefined) bibAnnotationText += `,\n doi={${info.doi}}`
+    if (info.author != undefined) bibAnnotationText += `,\n author={${info.author}}`
+    if (info.number != undefined) bibAnnotationText += `,\n number={${info.number}}`
+    if (info.journal != undefined) bibAnnotationText += `,\n journal={${info.journal}}`
+    if (info.date != undefined) bibAnnotationText += `,\n year={${info.date.getFullYear()}}`
+    if (info.pages != undefined) bibAnnotationText += `,\n pages={${info.pages}}`
+    if (info.volume != undefined) bibAnnotationText += `,\n volume={${info.volume}}`
+    console.log(info.author)
+    console.log(info.doi != undefined)
+    bibAnnotationText += "\n}"
     let bibAnnotationFontsize = 15
     let bibAnnotationHeight = bibAnnotationFontsize * (bibAnnotationText.split("\n").length) * 1.6
     page.drawText("Citation for this Paper", {x: 150, y: height - 50, size: 30, font: normalFont})
