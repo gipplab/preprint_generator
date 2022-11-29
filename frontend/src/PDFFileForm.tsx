@@ -1,27 +1,17 @@
 import React, {useState} from 'react';
+import {PDFInfo} from "./utils/PDFParser";
 
 interface PDFFileFormInterface {
-    title: string
-    author: string
-    venue: string
-    date: Date
-    pages: number
-    onSubmit: (info: PDFInformation) => void
-}
-
-interface PDFInformation {
-    title: string
-    author: string
-    venue: string
-    date: Date
+    info: PDFInfo
+    onSubmit: (info: PDFInfo) => void
 }
 
 export function PDFFileForm(props: PDFFileFormInterface) {
-    let title = props.title
-    let author = props.author
-    let venue = props.venue
-    let date = props.date
-
+    let title = props.info.title
+    let author = props.info.author
+    let venue = props.info.venue
+    let pages = props.info.pages
+    let date = props.info.date
     return (
         <div>
             <div>Title</div>
@@ -31,8 +21,10 @@ export function PDFFileForm(props: PDFFileFormInterface) {
             <div>Venue</div>
             <input defaultValue={venue} onChange={(value) => venue = value.target.value}/>
             <div>Date</div>
-            <input defaultValue={date.toString()} type="month" onChange={(value) => date = new Date(value.target.value)}/>
-            <button onClick={() => props.onSubmit({title, author, venue, date})}>Submit</button>
+            <input defaultValue={`${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`}
+                   type="month"
+                   onChange={(value) => date = new Date(value.target.value)}/>
+            <button onClick={() => props.onSubmit({title, author, venue, pages, date})}>Submit</button>
         </div>
     )
 }

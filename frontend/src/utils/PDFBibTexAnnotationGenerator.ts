@@ -1,0 +1,88 @@
+import {PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
+import {PDFFile, PDFInfo} from "./PDFParser";
+
+
+function saveByteArray(reportName: string, byte: Uint8Array) {
+    var blob = new Blob([byte], {type: "application/pdf"});
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = reportName;
+    link.click();
+};
+
+
+const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: number, y: number, scale: number } = {
+    x: 200,
+    y: 70,
+    scale: 0.2
+}) => {
+
+    let firstPage = pdfDoc.getPage(0)
+    let bibPage = pdfDoc.addPage()
+    let pageRef = bibPage.ref
+    const {width, height} = firstPage.getSize()
+    let buttonImageBytes = await fetch(process.env.PUBLIC_URL + "/citation_button.png").then((res) => res.arrayBuffer())
+    let buttonImage = await pdfDoc.embedPng(buttonImageBytes)
+    let buttonScale = buttonImage.scale(position.scale)
+    firstPage.drawImage(buttonImage, {
+        x: width - position.x,
+        y: height - position.y,
+        width: buttonScale.width,
+        height: buttonScale.height
+    })
+    let link = pdfDoc.context.register(
+        pdfDoc.context.obj({
+            Type: 'Annot',
+            Subtype: 'Link',
+            /* Bounds of the link on the page */
+            Rect: [
+                width - position.x, // lower left x coord
+                height - position.y, // lower left y coord
+                width - position.x + buttonScale.width, // upper right x coord
+                height - position.y + buttonScale.height, // upper right y coord
+            ],
+            /* Give the link a 2-unit-wide border, with sharp corners */
+            Border: [0, 0, 2],
+            /* Make the border color blue: rgb(0, 0, 1) */
+            C: [0, 0, 1],
+            /* Page to be visited when the link is clicked */
+            Dest: [pageRef, 'XYZ', null, null, null],
+        }),
+    );
+    firstPage.node.set(PDFName.of('Annots'), pdfDoc.context.obj([link]));
+    return bibPage
+}
+
+async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, info: PDFInfo) {
+    const {width, height} = page.getSize()
+    let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
+    let bibAnnotationText = `@articel{${"artTitle"},\n title={${"dkjwahdiwahdkaw"}},\n volume={${"volume"}},\n issn={${"issn"}},\n number={${"number"}},\n journal={${"journal"}},\n doi={${"doi"}},\n author={${"author"}},\n year={${"year"}},\n pages={${"pages"}}\n}`
+    let bibAnnotationFontsize = 15
+    let bibAnnotationHeight = bibAnnotationFontsize * (bibAnnotationText.split("\n").length) * 1.6
+    page.drawText("Citation for this Paper", {x: 150, y: height - 50, size: 30, font: normalFont})
+    page.drawText("BibTeX:", {x: 50, y: height - 90, size: 20, font: normalFont})
+    page.drawText(bibAnnotationText, {
+        x: 55,
+        y: height - 105 - bibAnnotationFontsize,
+        size: bibAnnotationFontsize,
+        font: annotationFont
+    })
+    page.drawRectangle({
+        x: 50,
+        y: height - 110 - bibAnnotationHeight,
+        width: width - 100,
+        height: bibAnnotationHeight + 10,
+        borderWidth: 1,
+        opacity: 0,
+        borderColor: rgb(0, 0, 0)
+    })
+}
+
+export async function createBibTexAnnotation(pdf: PDFFile) {
+    let pdfDoc = pdf.file
+    let bibPage = await createPageLinkAnnotation(pdfDoc)
+    await addBibTexAnnotation(pdfDoc, bibPage, pdf.info)
+    let pdfBytes = await pdfDoc.save()
+    saveByteArray(pdf.name, pdfBytes);
+}
