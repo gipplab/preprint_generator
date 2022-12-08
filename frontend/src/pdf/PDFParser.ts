@@ -18,6 +18,7 @@ export interface PDFInfo {
     author?: string;
     pages: number;
     date: Date;
+    keywords: string[]
 }
 
 export function parsePDF(file: PDFDocument, name: string): PDFInfo {
@@ -31,7 +32,8 @@ export function parsePDF(file: PDFDocument, name: string): PDFInfo {
     let journal
     let doi
     let artTitle = ((author || title).replace(/\s/g, '')) + date.getFullYear()
+    let keywords: string[] = []
 
 
-    return {author, date, pages, artTitle, title, volume, issn, number, journal, doi}
+    return {author, date, pages, artTitle, title, volume, issn, number, journal, doi, keywords}
 }

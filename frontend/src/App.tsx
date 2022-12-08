@@ -3,8 +3,8 @@ import './App.css';
 import {FileUploader} from "react-drag-drop-files";
 import {PDFDocument} from 'pdf-lib'
 import {PDFFileForm} from "./PDFFileForm";
-import {parsePDF, PDFFile, PDFInfo} from "./utils/PDFParser";
-import {createBibTexAnnotation} from "./utils/PDFBibTexAnnotationGenerator";
+import {parsePDF, PDFFile, PDFInfo} from "./pdf/PDFParser";
+import {createBibTexAnnotation} from "./pdf/PDFBibTexAnnotationGenerator";
 
 const fileTypes = ["PDF"];
 

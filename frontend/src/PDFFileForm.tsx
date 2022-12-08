@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {PDFInfo} from "./utils/PDFParser";
+import {PDFInfo} from "./pdf/PDFParser";
 
 interface PDFFileFormInterface {
     info: PDFInfo

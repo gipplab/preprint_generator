@@ -1,4 +1,4 @@
-import {PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
+import {PageSizes, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
 import {PDFFile, PDFInfo} from "./PDFParser";
 
 
@@ -18,7 +18,7 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
 }) => {
 
     let firstPage = pdfDoc.getPage(0)
-    let bibPage = pdfDoc.addPage()
+    let bibPage = pdfDoc.addPage([firstPage.getWidth(), firstPage.getHeight()])
     let pageRef = bibPage.ref
     const {width, height} = firstPage.getSize()
     let buttonImageBytes = await fetch(process.env.PUBLIC_URL + "/citation_button.png").then((res) => res.arrayBuffer())
