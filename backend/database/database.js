@@ -22,12 +22,8 @@ pool.query(createTableQuery).then(result => {
     }
 });
 
-function insertPreprint(title, doi, keywords) {
-    pool.query(`INSERT INTO preprints (title, doi, keywords) VALUES ($1, $2, $3) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, keywords = EXCLUDED.keywords;`, [title, doi, keywords]).then(result => {
-        if (result) {
-            console.log('Inserted!');
-        }
-    });
+async function insertPreprint(title, doi, keywords) {
+    await pool.query(`INSERT INTO preprints (title, doi, keywords) VALUES ($1, $2, $3) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, keywords = EXCLUDED.keywords;`, [title, doi, keywords])
 }
 
 async function getSimilarPreprints(keywords) {
