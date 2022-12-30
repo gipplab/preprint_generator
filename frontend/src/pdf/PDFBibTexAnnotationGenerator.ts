@@ -57,7 +57,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, info: PDF
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
-    let bibAnnotationText = `@articel{${info.artTitle},\n title={${info.title}}`
+    let bibAnnotationText = `@${info.artType}{${info.artTitle},\n title={${info.title}}`
     if (info.doi != undefined) bibAnnotationText += `,\n doi={${info.doi}}`
     if (info.author != undefined) bibAnnotationText += `,\n author={${info.author}}`
     if (info.number != undefined) bibAnnotationText += `,\n number={${info.number}}`

@@ -7,8 +7,8 @@ export interface PDFFile {
 }
 
 export interface PDFInfo {
+    artType: string;
     artTitle: string;
-
     title: string;
     volume?: number;
     issn?: string;
@@ -22,6 +22,7 @@ export interface PDFInfo {
 }
 
 export function parsePDF(file: PDFDocument, name: string): PDFInfo {
+    let artType = "article"
     let author = file.getAuthor()
     let title = file.getTitle() || name.substring(0, name.length - 4)
     let pages = file.getPageCount()
@@ -35,5 +36,5 @@ export function parsePDF(file: PDFDocument, name: string): PDFInfo {
     let keywords: string[] = []
 
 
-    return {author, date, pages, artTitle, title, volume, issn, number, journal, doi, keywords}
+    return {artType, author, date, pages, artTitle, title, volume, issn, number, journal, doi, keywords}
 }
