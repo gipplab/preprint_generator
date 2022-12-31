@@ -1,3 +1,4 @@
+import {Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField} from '@mui/material';
 import React, {useState} from 'react';
 import {PDFInfo} from "./pdf/PDFParser";
 
@@ -6,7 +7,16 @@ interface PDFFileFormInterface {
     onSubmit: (info: PDFInfo) => void
 }
 
+interface BibTexEntry {
+    name: string
+    default: boolean
+    value: any
+}
+
 export function PDFFileForm(props: PDFFileFormInterface) {
+    let bibTexEntries: BibTexEntry[] = ["Reference", "Title", "Author",].map((entry) => {
+        return {name: entry, default: true, value: null}
+    })
     let artType = props.info.artType
     let artTitle = props.info.artTitle
     let title = props.info.title
@@ -15,45 +25,54 @@ export function PDFFileForm(props: PDFFileFormInterface) {
     let date = props.info.date
     return (
         <div>
-            <div>
-                <label htmlFor="type">What describes your work the best?:</label>
-                <select name="article" id="type" onChange={(value) => artType = value.target.value}>
-                    <option value="article">Journal article</option>
-                    <option value="book">Book</option>
-                    <option value="booklet">Printed work without a publisher</option>
-                    <option value="inbook">Any section in a book</option>
-                    <option value="incollection">A titled section of a book</option>
-                    <option value="inproceedings">Conference paper</option>
-                    <option value="manual">Manual</option>
-                    <option value="mastersthesis">Master's thesis</option>
-                    <option value="phdthesis">PhD thesis</option>
-                    <option value="techreport">Technical report or white paper</option>
-                    <option value="unpublished">A work that has not yet been officially published</option>
-                    <option value="misc">Miscellaneous: if nothing else fits</option>
-                </select>
+            <div style={{maxWidth: "80%"}}>
+                <Grid container spacing={2}>
+                    <Grid item>
+                        <FormControl style={{minWidth: 120}}>
+                            <InputLabel id="type-label">Type</InputLabel>
+                            <Select id="type" labelId="type-label" label="Type" onChange={(value) => {
+                                artType = value.target.value as string
+                            }}>
+                                <MenuItem value="article">Journal article</MenuItem>
+                                <MenuItem value="book">Book</MenuItem>
+                                <MenuItem value="booklet">Printed work without a publisher</MenuItem>
+                                <MenuItem value="inbook">Any section in a book</MenuItem>
+                                <MenuItem value="incollection">A titled section of a book</MenuItem>
+                                <MenuItem value="inproceedings">Conference paper</MenuItem>
+                                <MenuItem value="manual">Manual</MenuItem>
+                                <MenuItem value="mastersthesis">Master's thesis</MenuItem>
+                                <MenuItem value="phdthesis">PhD thesis</MenuItem>
+                                <MenuItem value="techreport">Technical report or white paper</MenuItem>
+                                <MenuItem value="unpublished">A work that has not yet been officially published
+                                </MenuItem>
+                                <MenuItem value="misc">Miscellaneous: if nothing else fits</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    {
+                        bibTexEntries.map((entry) => (
+                            <Grid item>
+                                <TextField
+                                    id="outlined-multiline-static"
+                                    label={entry.name}
+                                    multiline
+                                    onChange={(value) => entry.value = value}
+                                    defaultValue={entry.value || ""}
+                                />
+                            </Grid>
+                        ))
+                    }
+                    <Grid item>
+                        <Button
+                            //TODO add proper onClick and add input button
+                            variant="contained" onClick={() => props.onSubmit({
+                            artType: artType, keywords: [], artTitle, title, author, pages, date
+                        })}>Submit
+                        </Button>
+                    </Grid>
+
+                </Grid>
             </div>
-            <div>
-                <label htmlFor="reference">Choose a reference name:</label>
-                <input id="reference" defaultValue={artTitle} onChange={(value) => artTitle = value.target.value}/>
-            </div>
-            <div>
-                <label htmlFor="title">Choose a title:</label>
-                <input id="title" defaultValue={title} onChange={(value) => title = value.target.value}/>
-            </div>
-            <div>
-                <label htmlFor="author">Author:</label>
-                <input id="author" defaultValue={author} onChange={(value) => author = value.target.value}/>
-            </div>
-            <div>
-                <label htmlFor="date">Choose a publishing date:</label>
-                <input id="date"
-                       defaultValue={`${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`}
-                       type="month"
-                       onChange={(value) => date = new Date(value.target.value)}/>
-            </div>
-            <button
-                onClick={() => props.onSubmit({artType, keywords: [], artTitle, title, author, pages, date})}>Submit
-            </button>
         </div>
     )
 }
