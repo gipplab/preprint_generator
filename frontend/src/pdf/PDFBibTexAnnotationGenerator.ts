@@ -53,20 +53,26 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
     return bibPage
 }
 
-async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, info: PDFInfo) {
+async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: { [id: string]: string }) {
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
-    let bibAnnotationText = `@${info.artType}{${info.artTitle},\n title={${info.title}}`
-    if (info.doi != undefined) bibAnnotationText += `,\n doi={${info.doi}}`
-    if (info.author != undefined) bibAnnotationText += `,\n author={${info.author}}`
-    if (info.number != undefined) bibAnnotationText += `,\n number={${info.number}}`
-    if (info.journal != undefined) bibAnnotationText += `,\n journal={${info.journal}}`
-    if (info.date != undefined) bibAnnotationText += `,\n year={${info.date.getFullYear()}}`
-    if (info.pages != undefined) bibAnnotationText += `,\n pages={${info.pages}}`
-    if (info.volume != undefined) bibAnnotationText += `,\n volume={${info.volume}}`
-    console.log(info.author)
-    console.log(info.doi != undefined)
+    let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]},\n title={${bibTexEntries["title"]}}`
+    const [year, month] = bibTexEntries["publish"].split("-").map((part) => {
+        return parseInt(part)
+    })
+    bibAnnotationText += `,\n year={${year}}`
+    bibAnnotationText += `,\n month={${month}}`
+    delete bibTexEntries["artType"]
+    delete bibTexEntries["title"]
+    delete bibTexEntries["ref"]
+    delete bibTexEntries["publish"]
+    for (let key in bibTexEntries) {
+        let value = bibTexEntries[key];
+        if (value != "") {
+            bibAnnotationText += `,\n ${key}={${value}}`
+        }
+    }
     bibAnnotationText += "\n}"
     let bibAnnotationFontsize = 15
     let bibAnnotationHeight = bibAnnotationFontsize * (bibAnnotationText.split("\n").length) * 1.6
@@ -89,10 +95,10 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, info: PDF
     })
 }
 
-export async function createBibTexAnnotation(pdf: PDFFile) {
-    let pdfDoc = pdf.file
+export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: { [id: string]: string }) {
+    let pdfDoc = file
     let bibPage = await createPageLinkAnnotation(pdfDoc)
-    await addBibTexAnnotation(pdfDoc, bibPage, pdf.info)
+    await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries)
     let pdfBytes = await pdfDoc.save()
-    saveByteArray(pdf.name, pdfBytes);
+    saveByteArray(name, pdfBytes);
 }

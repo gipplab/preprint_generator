@@ -1,5 +1,9 @@
 # Enhanced Preprint Generator
 
+## Setup
+
+Node version: 16.13.0
+
 ## Useful resources
 
  - https://pdf-lib.js.org/ (edit pdfs)

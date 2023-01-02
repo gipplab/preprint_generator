@@ -5,6 +5,9 @@ import {PDFDocument} from 'pdf-lib'
 import {PDFFileForm} from "./PDFFileForm";
 import {parsePDF, PDFFile, PDFInfo} from "./pdf/PDFParser";
 import {createBibTexAnnotation} from "./pdf/PDFBibTexAnnotationGenerator";
+import {AppBar, Box, Button, IconButton, Toolbar, Typography} from "@mui/material";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ArticleIcon from '@mui/icons-material/Article';
 
 const fileTypes = ["PDF"];
 
@@ -21,6 +24,12 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = error => reject(error);
+});
+
+const darkTheme = createTheme({
+    palette: {
+        mode: 'dark',
+    },
 });
 
 class App extends Component<AppProps, AppState> {
@@ -42,39 +51,49 @@ class App extends Component<AppProps, AppState> {
 
     render() {
         return (
-            <div className="App">
-                <header className="App-header">
-                    <button onClick={() => {
-                        this.setState({file: undefined})
-                    }}>Reset Document
-                    </button>
-                    <p className="App-intro">{this.state.apiResponse}</p>
-                    {(!this.state.file) &&
-                        <FileUploader handleChange={async (file: any) => {
-                            let pdfDoc = await PDFDocument.load(await toBase64(file))
-                            let pdfFile: PDFFile = {
-                                name: file.name,
-                                file: pdfDoc,
-                                info: parsePDF(pdfDoc, file.name)
-                            }
-                            this.setState({
-                                file: pdfFile
-                            })
+            <ThemeProvider theme={darkTheme}>
+                <div className="App">
+                    <Box sx={{flexGrow: 1}}>
+                        <AppBar position="static">
+                            <Toolbar>
+                                <ArticleIcon/>
+                                <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+                                    {this.state.file ? this.state.file.name : "Enhanced Preprint Generator"}
+                                </Typography>
+                                <Button color="inherit" onClick={() => {
+                                    this.setState({file: undefined})
+                                }}>Reset Document</Button>
+                            </Toolbar>
+                        </AppBar>
+                    </Box>
+                    <header className="App-header">
+                        <p className="App-intro">{this.state.apiResponse}</p>
+                        {(!this.state.file) &&
+                            <FileUploader handleChange={async (file: any) => {
+                                let pdfDoc = await PDFDocument.load(await toBase64(file))
+                                let pdfFile: PDFFile = {
+                                    name: file.name,
+                                    file: pdfDoc,
+                                    info: parsePDF(pdfDoc, file.name)
+                                }
+                                this.setState({
+                                    file: pdfFile
+                                })
 
-                        }} name="file"
-                                      types={fileTypes}/>}
-                    {this.state.file && <div>{this.state.file.name}</div>}
-                    {this.state.file &&
-                        <PDFFileForm onSubmit={async (file) => {
-                            console.log(file)
-                            await createBibTexAnnotation({
-                                file: this.state.file!.file,
-                                name: this.state.file!.name,
-                                info: file
-                            })
-                        }} info={this.state.file.info}/>}
-                </header>
-            </div>
+                            }} name="file"
+                                          types={fileTypes}/>}
+                        <br/>
+                        {this.state.file &&
+                            <PDFFileForm onSubmit={async (bibTexEntries) => {
+                                await createBibTexAnnotation(
+                                    this.state.file!.file,
+                                    this.state.file!.name,
+                                    bibTexEntries
+                                )
+                            }} info={this.state.file.info}/>}
+                    </header>
+                </div>
+            </ThemeProvider>
         );
     }
 }
