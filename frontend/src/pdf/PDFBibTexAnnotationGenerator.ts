@@ -19,7 +19,7 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
     let bibPage = pdfDoc.addPage([firstPage.getWidth(), firstPage.getHeight()])
     let pageRef = bibPage.ref
     const {width, height} = firstPage.getSize()
-    let buttonImageBytes = await fetch(process.env.PUBLIC_URL + "/citation_button.png").then((res) => res.arrayBuffer())
+    let buttonImageBytes = await fetch("/citation_button.png").then((res) => res.arrayBuffer())
     let buttonImage = await pdfDoc.embedPng(buttonImageBytes)
     let buttonScale = buttonImage.scale(position.scale)
     firstPage.drawImage(buttonImage, {

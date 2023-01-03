@@ -101,7 +101,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 </Grid>
                 {
                     entries.map((entry) => (
-                        <Grid item>
+                        <Grid item key={entry.tag}>
                             <TextField
                                 id="outlined-multiline-static"
                                 error={entry.error}
