@@ -59,19 +59,19 @@ class App extends Component<AppProps, AppState> {
                 <div className="App">
                     <AppBar position="static">
                         <Toolbar style={{justifyContent: "space-between", alignItems: "center"}}>
-                            <div style={{display: "flex", alignItems: "center"}}>
-                                <ArticleIcon sx={{mr: 2}}/>
-                                <Typography variant="h5" component="div" sx={{flexGrow: 1}}>
-                                    {this.state.file ? this.state.file.name : "Enhanced Preprint Generator"}
-                                </Typography>
+                            <div style={{flex: 0.33, display: "flex", alignItems: "center"}}>
+                                <ArticleIcon/>
                             </div>
-                            <div style={{display: "flex", alignItems: "center"}}>
-                                <Button color="inherit" onClick={() => {
-                                    this.setState({file: undefined})
-                                }}>Reset Document</Button>
+                            <Typography variant="h5" component="div" style={{flex: 0.33}}>
+                                {this.state.file ? this.state.file.name : "Enhanced Preprint Generator"}
+                            </Typography>
+                            <div style={{flex: 0.33, display: "flex", flexDirection: "row-reverse", alignItems: "center"}}>
                                 {this.state.apiConnected ? (
                                     <Tooltip title="API connected!"><PowerIcon/></Tooltip>) : (
                                     <Tooltip title="API disconnected!"><PowerOffIcon/></Tooltip>)}
+                                <Button color="inherit" onClick={() => {
+                                    this.setState({file: undefined})
+                                }}>Reset Document</Button>
                             </div>
                         </Toolbar>
                     </AppBar>
