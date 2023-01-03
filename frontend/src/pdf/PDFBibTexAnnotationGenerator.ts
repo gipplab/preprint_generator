@@ -1,6 +1,4 @@
-import {breakTextIntoLines, PageSizes, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
-import {PDFFile, PDFInfo} from "./PDFParser";
-
+import {breakTextIntoLines, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
 
 function saveByteArray(reportName: string, byte: Uint8Array) {
     var blob = new Blob([byte], {type: "application/pdf"});
@@ -69,7 +67,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     delete bibTexEntries["publish"]
     for (let key in bibTexEntries) {
         let value = bibTexEntries[key];
-        if (value != "") {
+        if (value !== "") {
             bibAnnotationText += `,\n ${key}={${value}}`
         }
     }

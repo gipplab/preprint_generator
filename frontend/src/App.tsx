@@ -3,15 +3,16 @@ import './App.css';
 import {FileUploader} from "react-drag-drop-files";
 import {PDFDocument} from 'pdf-lib'
 import {PDFFileForm} from "./PDFFileForm";
-import {parsePDF, PDFFile, PDFInfo} from "./pdf/PDFParser";
+import {parsePDF, PDFFile} from "./pdf/PDFParser";
 import {createBibTexAnnotation} from "./pdf/PDFBibTexAnnotationGenerator";
-import {AppBar, Box, Button, Grid, Icon, IconButton, Toolbar, Tooltip, Typography} from "@mui/material";
+import {AppBar, Button, Toolbar, Tooltip, Typography} from "@mui/material";
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import ArticleIcon from '@mui/icons-material/Article';
 import {TagInputField} from "./TagInputField";
 import PowerIcon from '@mui/icons-material/Power';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 
+const PDFJS = window.pdfjsLib;
 const fileTypes = ["PDF"];
 
 interface AppProps {
@@ -34,6 +35,20 @@ const darkTheme = createTheme({
         mode: 'dark',
     },
 });
+
+async function getPDFText(base64File: string) {
+    const pdfJSFile = await PDFJS.getDocument(base64File).promise
+    const numPages = pdfJSFile.numPages;
+    let text = '';
+    for (let i = 1; i <= numPages; i++) {
+        const page = await pdfJSFile.getPage(i)
+        const pageText = await page.getTextContent();
+        text += pageText.items.map((item: { str: any; }) => {
+            return item.str
+        }).join(" ")
+    }
+    return text
+}
 
 class App extends Component<AppProps, AppState> {
     constructor(props: AppProps) {
@@ -65,7 +80,12 @@ class App extends Component<AppProps, AppState> {
                             <Typography variant="h5" component="div" style={{flex: 0.33}}>
                                 {this.state.file ? this.state.file.name : "Enhanced Preprint Generator"}
                             </Typography>
-                            <div style={{flex: 0.33, display: "flex", flexDirection: "row-reverse", alignItems: "center"}}>
+                            <div style={{
+                                flex: 0.33,
+                                display: "flex",
+                                flexDirection: "row-reverse",
+                                alignItems: "center"
+                            }}>
                                 {this.state.apiConnected ? (
                                     <Tooltip title="API connected!"><PowerIcon/></Tooltip>) : (
                                     <Tooltip title="API disconnected!"><PowerOffIcon/></Tooltip>)}
@@ -80,7 +100,13 @@ class App extends Component<AppProps, AppState> {
                             <>
                                 <h6>Drag & Drop a preprint PDF to enhance it! </h6>
                                 <FileUploader handleChange={async (file: any) => {
-                                    let pdfDoc = await PDFDocument.load(await toBase64(file))
+                                    let base64File = await toBase64(file)
+                                    let pdfDoc = await PDFDocument.load(base64File)
+
+                                    //TODO make useful
+                                    const pdfText = await getPDFText(base64File);
+                                    console.log(pdfText)
+
                                     let pdfFile: PDFFile = {
                                         name: file.name,
                                         file: pdfDoc,

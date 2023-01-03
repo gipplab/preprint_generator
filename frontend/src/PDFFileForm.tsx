@@ -8,13 +8,11 @@ import {
     MenuItem,
     Select,
     TextField,
-    TextFieldProps
 } from '@mui/material';
 import React, {useState} from 'react';
 import {PDFInfo} from "./pdf/PDFParser";
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import {TagInputField} from "./TagInputField";
 
 interface PDFFileFormInterface {
     info: PDFInfo
@@ -49,7 +47,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
             default: false,
             value: ""
         }
-        if (newField != "" && entries.indexOf(newEntry) == -1) {
+        if (newField !== "" && entries.indexOf(newEntry) === -1) {
             setEntries([...entries, newEntry])
             setNewField("")
         }
@@ -114,7 +112,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                                 onChange={(e) => {
                                     entry.error = false
                                     setEntries(entries.map((obj) => {
-                                        if (obj == entry) {
+                                        if (obj === entry) {
                                             return {...obj, value: e.target.value}
                                         }
                                         return obj
@@ -171,12 +169,12 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                             bibTexEntries[entry.tag] = entry.value
                         })
                         let generate = true
-                        if (artType == "") {
+                        if (artType === "") {
                             generate = false
                             setArtTypeError(true)
                         }
                         setEntries(entries.map((entry) => {
-                            if (entry.value == "") {
+                            if (entry.value === "") {
                                 generate = false
                                 return {...entry, error: true}
                             }
