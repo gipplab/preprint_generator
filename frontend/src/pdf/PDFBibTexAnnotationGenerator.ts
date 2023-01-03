@@ -1,4 +1,4 @@
-import {PageSizes, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
+import {breakTextIntoLines, PageSizes, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
 import {PDFFile, PDFInfo} from "./PDFParser";
 
 
@@ -74,13 +74,18 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         }
     }
     bibAnnotationText += "\n}"
-    let bibAnnotationFontsize = 15
-    let bibAnnotationHeight = bibAnnotationFontsize * (bibAnnotationText.split("\n").length) * 1.6
+    let bibAnnotationFontsize = 12
+    const textWidth = (t: string) => annotationFont.widthOfTextAtSize(t, bibAnnotationFontsize);
+    const lineCount = breakTextIntoLines(bibAnnotationText, [""], width - 100, textWidth).length;
+    let bibAnnotationHeight = bibAnnotationFontsize * lineCount * 1.5
     page.drawText("Citation for this Paper", {x: 150, y: height - 50, size: 30, font: normalFont})
     page.drawText("BibTeX:", {x: 50, y: height - 90, size: 20, font: normalFont})
     page.drawText(bibAnnotationText, {
         x: 55,
         y: height - 105 - bibAnnotationFontsize,
+        maxWidth: width - 100,
+        wordBreaks: [""],
+        lineHeight: bibAnnotationFontsize * 1.5,
         size: bibAnnotationFontsize,
         font: annotationFont
     })
