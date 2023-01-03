@@ -1,6 +1,6 @@
 import {
     Button,
-    FormControl,
+    FormControl, FormHelperText,
     Grid,
     IconButton,
     InputAdornment,
@@ -14,6 +14,7 @@ import React, {useState} from 'react';
 import {PDFInfo} from "./pdf/PDFParser";
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import {TagInputField} from "./TagInputField";
 
 interface PDFFileFormInterface {
     info: PDFInfo
@@ -56,7 +57,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
 
     return (
         <div>
-            <Grid container spacing={2} style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+            <Grid container spacing={2} style={{display: "flex"}}>
                 <Grid item>
                     <FormControl style={{minWidth: 120}}>
                         <InputLabel id="type-label">Type</InputLabel>
@@ -79,6 +80,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                             </MenuItem>
                             <MenuItem value="misc">Miscellaneous: if nothing else fits</MenuItem>
                         </Select>
+                        <FormHelperText>Select the paper type</FormHelperText>
                     </FormControl>
                 </Grid>
                 <Grid item>
@@ -86,6 +88,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         id="date"
                         label="Publish Date"
                         type="month"
+                        helperText="Enter the publish date"
                         value={`${publishDate.getFullYear()}-${('0' + (publishDate.getMonth() + 1)).slice(-2)}`}
                         onChange={(e) => {
                             const [year, month] = e.target.value.split("-").map((part) => {
@@ -107,6 +110,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                                 label={entry.name}
                                 type={entry.type}
                                 value={entry.value}
+                                helperText={`Enter the ${entry.name}`}
                                 onChange={(e) => {
                                     entry.error = false
                                     setEntries(entries.map((obj) => {
@@ -139,6 +143,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     <TextField
                         label="New Field"
                         value={newField}
+                        helperText="Press enter to add a new field"
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
                                 handleSubmit()
