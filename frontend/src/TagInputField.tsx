@@ -8,7 +8,7 @@ export function TagInputField() {
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
-        <div style={{display: "flex"}}>
+        <div style={{display: "flex", alignItems: "center"}}>
             <TextField
                 label="Tags"
                 style={{flexGrow: 0, flexShrink: 0}}
