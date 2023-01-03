@@ -25,6 +25,7 @@ interface BibTexEntry {
     tag: string
     default: boolean
     value: string
+    error?: boolean
     type?: string
 }
 
@@ -37,16 +38,33 @@ export function PDFFileForm(props: PDFFileFormInterface) {
     ]);
     let [newField, setNewField] = useState("")
     let [publishDate, setPublishDate] = useState(props.info.date)
-    let [artType, setArtType] = useState("article")
+    let [artType, setArtType] = useState("")
+    let [artTypeError, setArtTypeError] = useState(false)
+
+    function handleSubmit() {
+        let newEntry = {
+            name: newField,
+            tag: newField,
+            default: false,
+            value: ""
+        }
+        if (newField != "" && entries.indexOf(newEntry) == -1) {
+            setEntries([...entries, newEntry])
+            setNewField("")
+        }
+    }
+
     return (
-        <div style={{display: "flex", alignItems: "center"}}>
-            <Grid container spacing={2} style={{justifyContent: "center"}}>
+        <div>
+            <Grid container spacing={2} style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
                 <Grid item>
                     <FormControl style={{minWidth: 120}}>
                         <InputLabel id="type-label">Type</InputLabel>
-                        <Select id="type" labelId="type-label" value={artType} label="Type" onChange={(value) => {
-                            setArtType(value.target.value as string)
-                        }}>
+                        <Select id="type" labelId="type-label" value={artType} label="Type" error={artTypeError}
+                                onChange={(value) => {
+                                    setArtTypeError(false)
+                                    setArtType(value.target.value as string)
+                                }}>
                             <MenuItem value="article">Journal article</MenuItem>
                             <MenuItem value="book">Book</MenuItem>
                             <MenuItem value="booklet">Printed work without a publisher</MenuItem>
@@ -85,10 +103,12 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         <Grid item>
                             <TextField
                                 id="outlined-multiline-static"
+                                error={entry.error}
                                 label={entry.name}
                                 type={entry.type}
                                 value={entry.value}
                                 onChange={(e) => {
+                                    entry.error = false
                                     setEntries(entries.map((obj) => {
                                         if (obj == entry) {
                                             return {...obj, value: e.target.value}
@@ -119,23 +139,17 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     <TextField
                         label="New Field"
                         value={newField}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSubmit()
+                            }
+                        }}
                         onChange={(e) => setNewField(e.target.value)}
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
                                     <IconButton edge="end" color="primary"
-                                                onClick={() => {
-                                                    let newEntry = {
-                                                        name: newField,
-                                                        tag: newField,
-                                                        default: false,
-                                                        value: ""
-                                                    }
-                                                    if (newField != "" && entries.indexOf(newEntry) == -1) {
-                                                        setEntries([...entries, newEntry])
-                                                        setNewField("")
-                                                    }
-                                                }}>
+                                                onClick={handleSubmit}>
                                         <AddOutlinedIcon/>
                                     </IconButton>
                                 </InputAdornment>)
@@ -151,7 +165,21 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         entries.forEach((entry) => {
                             bibTexEntries[entry.tag] = entry.value
                         })
-                        props.onSubmit(bibTexEntries)
+                        let generate = true
+                        if (artType == "") {
+                            generate = false
+                            setArtTypeError(true)
+                        }
+                        setEntries(entries.map((entry) => {
+                            if (entry.value == "") {
+                                generate = false
+                                return {...entry, error: true}
+                            }
+                            return entry
+                        }))
+                        if (generate) {
+                            props.onSubmit(bibTexEntries)
+                        }
                     }}>Generate
                     </Button>
                 </Grid>
