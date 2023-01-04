@@ -1,4 +1,5 @@
 import {PDFDocument} from "pdf-lib";
+import {extractKeywords} from "../languageProcessing/ExtractKeywords";
 
 export interface PDFFile {
     name: string;
@@ -21,7 +22,7 @@ export interface PDFInfo {
     keywords: string[]
 }
 
-export function parsePDF(file: PDFDocument, name: string): PDFInfo {
+export function parsePDF(file: PDFDocument, text: { firstPage: string; text: string }, name: string): PDFInfo {
     let artType = "article"
     let author = file.getAuthor()
     let title = file.getTitle() || name.substring(0, name.length - 4)
@@ -33,7 +34,8 @@ export function parsePDF(file: PDFDocument, name: string): PDFInfo {
     let journal
     let doi
     let artTitle = ((author || title).replace(/\s/g, '')) + date.getFullYear()
-    let keywords: string[] = []
+    let keywords: string[] = extractKeywords(text.text, 10)
+    console.log(keywords)
 
 
     return {artType, author, date, pages, artTitle, title, volume, issn, number, journal, doi, keywords}

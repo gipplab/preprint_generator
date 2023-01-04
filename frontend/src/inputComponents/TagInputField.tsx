@@ -2,8 +2,12 @@ import {TextField, Chip} from '@mui/material';
 import React, {useState} from "react";
 
 
-export function TagInputField() {
-    const [tags, setTags] = useState<string[]>([]);
+interface TagInputFieldInterface {
+    keywords: string[]
+}
+
+export function TagInputField(props: TagInputFieldInterface) {
+    const [tags, setTags] = useState<string[]>(props.keywords);
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
@@ -18,8 +22,10 @@ export function TagInputField() {
                 onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                         // Add the current input value as a new tag
-                        setTags([...tags, inputValue]);
-                        setInputValue('');
+                        if (inputValue !== "" && tags.indexOf(inputValue) === -1) {
+                            setTags([...tags, inputValue.toLowerCase()]);
+                            setInputValue('');
+                        }
                     }
                 }}
                 variant="outlined"
@@ -28,6 +34,7 @@ export function TagInputField() {
             <div style={{display: 'flex', flexWrap: 'wrap'}}>
                 {tags.map((tag) => (
                     <Chip
+                        key={tag}
                         label={tag}
                         style={{marginLeft: "5px", marginBottom: "5px"}}
                         onDelete={() => {
