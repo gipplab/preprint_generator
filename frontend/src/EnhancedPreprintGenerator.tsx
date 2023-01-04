@@ -80,11 +80,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         <PDFFileUploader file={this.state.file} handleChange={async (file: any) => {
                             let base64File = await toBase64(file)
                             let pdfDoc = await PDFDocument.load(base64File)
-
-                            //TODO make useful
                             const pdfText = await getPDFText(base64File);
-                            console.log(pdfText)
-
                             let pdfFile: PDFFile = {
                                 name: file.name,
                                 file: pdfDoc,
