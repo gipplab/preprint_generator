@@ -22,10 +22,17 @@ export interface PDFInfo {
     keywords: string[]
 }
 
-export function parsePDF(file: PDFDocument, text: { firstPage: string; text: string }, name: string): PDFInfo {
+export function parsePDF(file: PDFDocument, text: { firstPage: any; text: string }, name: string): PDFInfo {
+    const maxHeight = Math.max(...text.firstPage.items.map((item: { height: number }) => {
+        return item.height
+    }))
     let artType = "article"
     let author = file.getAuthor()
-    let title = file.getTitle() || name.substring(0, name.length - 4)
+    let title = text.firstPage.items.filter((item: { height: number }) => {
+        return item.height == maxHeight
+    }).map((item: any) => {
+        return item.str
+    }).join(" ").trim() || file.getTitle() || name.substring(0, name.length - 4)
     let pages = file.getPageCount()
     let date = file.getCreationDate() || new Date()
     let volume

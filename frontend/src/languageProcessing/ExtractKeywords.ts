@@ -5,7 +5,7 @@ export function extractKeywords(text: string, numKeywords: number): string[] {
     const tokens = text.toLowerCase().split(/\b/);
 
     // Remove stop words and punctuation
-    const terms = tokens.filter((token) => !STOP_WORDS.includes(token) && !/\d/.test(token) && /\w/.test(token));
+    const terms = tokens.filter((token) => !STOP_WORDS.includes(token) && !/\d/.test(token) && /\w/.test(token) && token.length > 5);
 
     // Calculate the term frequency for each term
     const termFrequency: { [id: string]: number } = terms.reduce((counts: { [id: string]: number }, term) => {

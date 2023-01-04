@@ -34,9 +34,9 @@ const darkTheme = createTheme({
 async function getPDFText(base64File: string) {
     const pdfJSFile = await PDFJS.getDocument(base64File).promise
     const numPages = pdfJSFile.numPages;
-    const firstPageText = (await (await pdfJSFile.getPage(1)).getTextContent()).items.map((item: { str: any; }) => {
-        return item.str
-    }).join(" ") as string
+    console.log(await pdfJSFile.getMetadata())
+    console.log(await (await pdfJSFile.getPage(1)).getTextContent())
+    const firstPage = await (await pdfJSFile.getPage(1)).getTextContent()
     let text = '';
     for (let i = 2; i <= numPages; i++) {
         const page = await pdfJSFile.getPage(i)
@@ -45,7 +45,7 @@ async function getPDFText(base64File: string) {
             return item.str
         }).join(" ")
     }
-    return {firstPage: firstPageText, text}
+    return {firstPage: firstPage, text}
 }
 
 class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
