@@ -1,4 +1,4 @@
-import {Grid,} from '@mui/material';
+import {Button, Grid,} from '@mui/material';
 import React, {useState} from 'react';
 import {PDFInfo} from "./PDFParser";
 import {GenerateButton} from "../inputComponents/GenerateButton";
@@ -28,24 +28,31 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         {name: "Author", tag: "author", default: true, value: props.info.author || ""},
         {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
     ]);
+
+    const [suggestions, setSuggestions] = useState<string[]>(["doi", "volume", "journal"])
+
     let [newField, setNewField] = useState("")
     let [publishDate, setPublishDate] = useState(props.info.date)
     let [artType, setArtType] = useState("")
     let [artTypeError, setArtTypeError] = useState(false)
 
-    function handleSubmit() {
+    function addField(field: string) {
         let newEntry = {
-            name: newField,
-            tag: newField,
+            name: field,
+            tag: field,
             default: false,
             value: ""
         }
-        if (newField !== "" && entries.map((entry) => {
+        if (field !== "" && entries.map((entry) => {
             return entry.name
         }).indexOf(newEntry.name) === -1) {
             setEntries([...entries, newEntry])
             setNewField("")
         }
+    }
+
+    function handleSubmit() {
+        addField(newField)
     }
 
     return (
@@ -85,13 +92,6 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     ))
                 }
                 <Grid item>
-                    <EntryFieldGenerator value={newField} onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            handleSubmit()
-                        }
-                    }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
-                </Grid>
-                <Grid item>
                     <GenerateButton onClick={() => {
                         const bibTexEntries: { [id: string]: string } = {}
                         bibTexEntries["artType"] = artType
@@ -118,6 +118,23 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 </Grid>
 
             </Grid>
+            <br/>
+            <div style={{display: "flex", alignItems: "flex-start"}}>
+                <EntryFieldGenerator value={newField} onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        handleSubmit()
+                    }
+                }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
+                {suggestions.map((suggestion) =>
+                    (<Button variant="contained" onClick={() => {
+                        setSuggestions(suggestions.filter((value) => {
+                            return value != suggestion
+                        }))
+                        addField(suggestion)
+                    }
+                    } style={{marginLeft: "5px", marginBottom: "5px"}}>{suggestion}</Button>)
+                )}
+            </div>
         </div>
     )
 }

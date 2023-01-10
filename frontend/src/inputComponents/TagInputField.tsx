@@ -11,7 +11,7 @@ export function TagInputField(props: TagInputFieldInterface) {
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
-        <div style={{display: "flex", alignItems: "center"}}>
+        <div style={{display: "flex", alignItems: "start"}}>
             <TextField
                 label="Tags"
                 style={{flexGrow: 0, flexShrink: 0}}
