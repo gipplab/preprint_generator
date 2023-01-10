@@ -1,4 +1,4 @@
-import {Button, Grid,} from '@mui/material';
+import {Button, Chip, Grid,} from '@mui/material';
 import React, {useState} from 'react';
 import {PDFInfo} from "./PDFParser";
 import {GenerateButton} from "../inputComponents/GenerateButton";
@@ -126,14 +126,15 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     }
                 }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
                 {suggestions.map((suggestion) =>
-                    (<Button variant="contained" onClick={() => {
-                        setSuggestions(suggestions.filter((value) => {
-                            return value != suggestion
-                        }))
-                        addField(suggestion)
-                    }
-                    } style={{marginLeft: "5px", marginBottom: "5px"}}>{suggestion}</Button>)
-                )}
+                    (<Chip onClick={() => {
+                            setSuggestions(suggestions.filter((value) => {
+                                return value != suggestion
+                            }))
+                            addField(suggestion)
+                        }
+                        } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion}
+                           label={suggestion}/>
+                    ))}
             </div>
         </div>
     )
