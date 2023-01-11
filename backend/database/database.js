@@ -27,12 +27,22 @@ async function insertPreprint(title, doi, keywords) {
 }
 
 async function getSimilarPreprints(keywords) {
-    const similarPreprints = new Set()
+    function comparePreprints(obj1, obj2) {
+        return obj1.title === obj2.title && obj1.doi === obj2.doi;
+    }
+
+    const similarPreprints = []
     for (const keyword of keywords) {
         const res = await pool.query(`Select * from preprints where ($1) = ANY(keywords);`, [keyword])
-        res.rows.forEach(row => similarPreprints.add(row))
+        res.rows.forEach(row => similarPreprints.push(row))
     }
-    return Array.from(similarPreprints)
+    const uniqueObjects = similarPreprints.filter(function (obj, index, self) {
+        return self.findIndex(function (o) {
+            return comparePreprints(o, obj);
+        }) === index;
+    });
+
+    return uniqueObjects
 
 }
 
