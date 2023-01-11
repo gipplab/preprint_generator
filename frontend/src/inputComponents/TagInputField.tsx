@@ -4,12 +4,10 @@ import React, {useState} from "react";
 
 interface TagInputFieldInterface {
     keywords: string[]
-    submitKeywords: (keywords: string[]) => void
+    setKeywords: (keywords: string[]) => void
 }
 
 export function TagInputField(props: TagInputFieldInterface) {
-    const [tags, setTags] = useState<string[]>(props.keywords);
-    props.submitKeywords(tags)
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
@@ -24,9 +22,8 @@ export function TagInputField(props: TagInputFieldInterface) {
                 onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                         // Add the current input value as a new tag
-                        if (inputValue !== "" && tags.indexOf(inputValue) === -1) {
-                            setTags([...tags, inputValue.toLowerCase()]);
-                            props.submitKeywords(tags)
+                        if (inputValue !== "" && props.keywords.indexOf(inputValue) === -1) {
+                            props.setKeywords([...props.keywords, inputValue.toLowerCase()]);
                             setInputValue('');
                         }
                     }
@@ -35,14 +32,14 @@ export function TagInputField(props: TagInputFieldInterface) {
                 helperText="Press enter to add a tag"
             />
             <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                {tags.map((tag) => (
+                {props.keywords.map((tag) => (
                     <Chip
                         key={tag}
                         label={tag}
                         style={{marginLeft: "5px", marginBottom: "5px"}}
                         onDelete={() => {
                             // Remove the tag from the array
-                            setTags(tags.filter((t) => t !== tag));
+                            props.setKeywords(props.keywords.filter((t) => t !== tag));
                         }}
                     />
                 ))}

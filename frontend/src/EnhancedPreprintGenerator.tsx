@@ -92,29 +92,33 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         }}
                     />
                     <header className="App-header">
-                        <PDFFileUploader file={this.state.file} handleChange={async (file: any) => {
-                            let base64File = await toBase64(file)
-                            let pdfDoc = await PDFDocument.load(base64File)
-                            const pdfText = await getPDFText(base64File);
-                            let pdfFile: PDFFile = {
-                                name: file.name,
-                                file: pdfDoc,
-                                info: parsePDF(pdfDoc, pdfText, file.name)
-                            }
-                            this.setState({
-                                file: pdfFile
-                            })
+                        {!this.state.file &&
+                            <PDFFileUploader handleChange={async (file: any) => {
+                                let base64File = await toBase64(file)
+                                let pdfDoc = await PDFDocument.load(base64File)
+                                const pdfText = await getPDFText(base64File);
+                                let pdfFile: PDFFile = {
+                                    name: file.name,
+                                    file: pdfDoc,
+                                    info: parsePDF(pdfDoc, pdfText, file.name)
+                                }
+                                this.setState({
+                                    file: pdfFile
+                                })
 
-                        }}/>
-                        <PDFInfoForm file={this.state.file} onSubmit={async (bibTexEntries, keywords) => {
-                            this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"])
-                            console.log(await this.requestPreprints(bibTexEntries["title"], keywords))
-                            await createBibTexAnnotation(
-                                this.state.file!.file,
-                                this.state.file!.name,
-                                bibTexEntries
-                            )
-                        }}/>
+                            }}/>
+                        }
+                        {this.state.file &&
+                            <PDFInfoForm file={this.state.file} onSubmit={async (bibTexEntries, keywords) => {
+                                this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"])
+                                console.log(await this.requestPreprints(bibTexEntries["title"], keywords))
+                                await createBibTexAnnotation(
+                                    this.state.file!.file,
+                                    this.state.file!.name,
+                                    bibTexEntries
+                                )
+                            }}/>
+                        }
                     </header>
                 </div>
             </ThemeProvider>

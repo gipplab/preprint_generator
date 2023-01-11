@@ -36,14 +36,11 @@ async function getSimilarPreprints(keywords) {
         const res = await pool.query(`Select * from preprints where ($1) = ANY(keywords);`, [keyword])
         res.rows.forEach(row => similarPreprints.push(row))
     }
-    const uniqueObjects = similarPreprints.filter(function (obj, index, self) {
+    return similarPreprints.filter(function (obj, index, self) {
         return self.findIndex(function (o) {
             return comparePreprints(o, obj);
         }) === index;
-    });
-
-    return uniqueObjects
-
+    })
 }
 
 exports.insertPreprint = insertPreprint
