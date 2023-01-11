@@ -28,8 +28,8 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         {name: "Author", tag: "author", default: true, value: props.info.author || ""},
         {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
     ]);
-
-    const [suggestions, setSuggestions] = useState<string[]>(["doi", "volume", "journal"])
+    let suggestions_default = ["doi", "volume", "journal"]
+    const [suggestions, setSuggestions] = useState<string[]>(suggestions_default)
 
     let [newField, setNewField] = useState("")
     let [publishDate, setPublishDate] = useState(props.info.date)
@@ -84,6 +84,9 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                                     return obj
                                 }))
                             }} onClick={() => {
+                                if (suggestions_default.indexOf(entry.name) !== -1) {
+                                    setSuggestions([...suggestions, entry.name])
+                                }
                                 setEntries(entries.filter((element) => {
                                     return element !== entry
                                 }))
@@ -118,7 +121,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 </Grid>
 
             </Grid>
-            <br/>
+            <h6>Add new fields</h6>
             <div style={{display: "flex", alignItems: "flex-start"}}>
                 <EntryFieldGenerator value={newField} onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -128,7 +131,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 {suggestions.map((suggestion) =>
                     (<Chip onClick={() => {
                             setSuggestions(suggestions.filter((value) => {
-                                return value != suggestion
+                                return value !== suggestion
                             }))
                             addField(suggestion)
                         }

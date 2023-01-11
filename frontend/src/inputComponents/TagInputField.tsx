@@ -4,10 +4,12 @@ import React, {useState} from "react";
 
 interface TagInputFieldInterface {
     keywords: string[]
+    submitKeywords: (keywords: string[]) => void
 }
 
 export function TagInputField(props: TagInputFieldInterface) {
     const [tags, setTags] = useState<string[]>(props.keywords);
+    props.submitKeywords(tags)
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
@@ -24,6 +26,7 @@ export function TagInputField(props: TagInputFieldInterface) {
                         // Add the current input value as a new tag
                         if (inputValue !== "" && tags.indexOf(inputValue) === -1) {
                             setTags([...tags, inputValue.toLowerCase()]);
+                            props.submitKeywords(tags)
                             setInputValue('');
                         }
                     }
