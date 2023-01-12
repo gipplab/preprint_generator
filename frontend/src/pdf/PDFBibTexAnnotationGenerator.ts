@@ -51,7 +51,7 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
     return bibPage
 }
 
-async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: { [id: string]: string }) {
+async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: { [id: string]: string }, similarPreprints?: { title: string, doi?: string, keywords: string[] }[]) {
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
@@ -72,7 +72,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         }
     }
     bibAnnotationText += "\n}"
-    let bibAnnotationFontsize = 12
+    let bibAnnotationFontsize = 10
     const textWidth = (t: string) => annotationFont.widthOfTextAtSize(t, bibAnnotationFontsize);
     const lineCount = breakTextIntoLines(bibAnnotationText, [""], width - 100, textWidth).length;
     let bibAnnotationHeight = bibAnnotationFontsize * lineCount * 1.5
@@ -96,12 +96,31 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         opacity: 0,
         borderColor: rgb(0, 0, 0)
     })
+    if (!similarPreprints) {
+        return
+    }
+
+    let similarPreprintFontsize = 12
+    let similarPreprintsText = ""
+    similarPreprints.forEach((preprint, index) => {
+        similarPreprintsText += `${index + 1}) Title: ${preprint.title}, Keywords: ${preprint.keywords.join(", ")}\n\n`
+    })
+
+    page.drawText("Similar Papers:", {x: 50, y: height - 135 - bibAnnotationHeight, size: 20, font: normalFont})
+    page.drawText(similarPreprintsText, {
+        x: 55,
+        y: height - 150 - bibAnnotationHeight - similarPreprintFontsize,
+        maxWidth: width - 100,
+        lineHeight: similarPreprintFontsize * 1.5,
+        size: similarPreprintFontsize,
+        font: normalFont
+    })
 }
 
-export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: { [id: string]: string }) {
+export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: { [id: string]: string }, similarPreprints?: { title: string, doi?: string, keywords: string[] }[]) {
     let pdfDoc = file
     let bibPage = await createPageLinkAnnotation(pdfDoc)
-    await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries)
+    await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries, similarPreprints)
     let pdfBytes = await pdfDoc.save()
     saveByteArray(name, pdfBytes);
 }

@@ -66,11 +66,18 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         fetch(`http://localhost:9000/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}`, {
             method: 'PUT'
         }).then(_ => {
+        }).catch(_ => {
         })
     }
 
     async requestPreprints(title: string, keywords: string[]) {
-        const response = await fetch(`http://localhost:9000/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
+        let response
+        try {
+            response = await fetch(`http://localhost:9000/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
+        } catch (e) {
+            return undefined
+        }
+
         const result: { title: string, doi?: string, keywords: string[] }[] = JSON.parse(await response.text())
         return result.filter((preprint) => {
             return preprint.title !== title
@@ -111,11 +118,12 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file} onSubmit={async (bibTexEntries, keywords) => {
                                 this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"])
-                                console.log(await this.requestPreprints(bibTexEntries["title"], keywords))
+                                const similarPreprints = await this.requestPreprints(bibTexEntries["title"], keywords)
                                 await createBibTexAnnotation(
                                     this.state.file!.file,
                                     this.state.file!.name,
-                                    bibTexEntries
+                                    bibTexEntries,
+                                    similarPreprints
                                 )
                             }}/>
                         }
