@@ -96,7 +96,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         opacity: 0,
         borderColor: rgb(0, 0, 0)
     })
-    if (!similarPreprints) {
+    if (!similarPreprints || similarPreprints.length == 0) {
         return
     }
 
