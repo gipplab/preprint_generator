@@ -22,12 +22,41 @@ export interface BibTexEntry {
 }
 
 export function PDFFileForm(props: PDFFileFormInterface) {
-    const [entries, setEntries] = useState<BibTexEntry[]>([
-        {name: "Reference", tag: "ref", default: true, value: props.info.artTitle},
-        {name: "Title", tag: "title", default: true, value: props.info.title},
-        {name: "Author", tag: "author", default: true, value: props.info.author || ""},
-        {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
-    ]);
+    const bibTexEntries = {
+        author: {name: "Author (seperated by comma)", tag: "author", default: true, value: props.info.author || ""},
+        title: {name: "Title", tag: "title", default: true, value: props.info.title},
+        ref: {name: "Reference", tag: "ref", default: true, value: props.info.artTitle},
+        pages: {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
+        journal: {name: "Journal", tag: "journal", default: true, value: "", type: ""},
+        volume: {name: "Volume", tag: "volume", default: true, value: "", type: "number"},
+        number: {name: "Number", tag: "number", default: true, value: "", type: "number"},
+        publisher: {name: "Publisher", tag: "publisher", default: true, value: "", type: ""},
+        address: {name: "Address", tag: "address", default: true, value: "", type: ""},
+        howpublished: {name: "howpublished", tag: "howpublished", default: true, value: "", type: ""},
+        booktitle: {name: "Booktitle", tag: "booktitle", default: true, value: "", type: ""},
+        editor: {name: "Editor", tag: "editor", default: true, value: "", type: ""},
+        series: {name: "Series", tag: "series", default: true, value: "", type: ""},
+        organization: {name: "Organization", tag: "organization", default: true, value: "", type: ""},
+        school: {name: "School", tag: "school", default: true, value: "", type: ""},
+        note: {name: "Note", tag: "note", default: true, value: "", type: ""},
+        institution: {name: "Institution", tag: "institution", default: true, value: "", type: ""},
+    }
+    const artTypeFields: { [type: string]: BibTexEntry[] } = {
+        "article": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.journal, bibTexEntries.volume, bibTexEntries.number, bibTexEntries.pages],
+        "book": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.publisher, bibTexEntries.address],
+        "booklet": [bibTexEntries.ref, bibTexEntries.title, bibTexEntries.author, bibTexEntries.howpublished],
+        "inbook": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.booktitle, bibTexEntries.publisher, bibTexEntries.address, bibTexEntries.pages],
+        "incollection": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.booktitle, bibTexEntries.publisher, bibTexEntries.address, bibTexEntries.pages],
+        "inproceedings": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.booktitle, bibTexEntries.series, bibTexEntries.pages, bibTexEntries.publisher, bibTexEntries.address],
+        "manual": [bibTexEntries.ref, bibTexEntries.title, bibTexEntries.author, bibTexEntries.organization, bibTexEntries.address],
+        "mastersthesis": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.school, bibTexEntries.address],
+        "misc": [bibTexEntries.ref, bibTexEntries.title, bibTexEntries.author, bibTexEntries.howpublished, bibTexEntries.note],
+        "phdthesis": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title, bibTexEntries.school, bibTexEntries.address],
+        "proceedings": [bibTexEntries.ref, bibTexEntries.editor, bibTexEntries.title, bibTexEntries.series, bibTexEntries.volume, bibTexEntries.publisher, bibTexEntries.address],
+        "techreport": [bibTexEntries.ref, bibTexEntries.title, bibTexEntries.author, bibTexEntries.institution, bibTexEntries.address, bibTexEntries.number],
+        "unpublished": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title],
+    }
+    const [entries, setEntries] = useState<BibTexEntry[]>([]);
     let suggestions_default = ["doi", "volume", "journal"]
     const [suggestions, setSuggestions] = useState<string[]>(suggestions_default)
 
@@ -62,6 +91,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     <ArticleTypeSelect value={artType} error={artTypeError} onChange={(value) => {
                         setArtTypeError(false)
                         setArtType(value.target.value as string)
+                        setEntries(artTypeFields[value.target.value as string])
                     }}/>
                 </Grid>
                 <Grid item>
