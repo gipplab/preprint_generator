@@ -57,8 +57,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         "unpublished": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title],
     }
     const [entries, setEntries] = useState<BibTexEntry[]>([]);
-    let suggestions_default = ["doi", "volume", "journal"]
-    const [suggestions, setSuggestions] = useState<string[]>(suggestions_default)
+    const [suggestions, setSuggestions] = useState<BibTexEntry[]>([])
 
     let [newField, setNewField] = useState("")
     let [publishDate, setPublishDate] = useState(props.info.date)
@@ -66,16 +65,26 @@ export function PDFFileForm(props: PDFFileFormInterface) {
     let [artTypeError, setArtTypeError] = useState(false)
 
     function addField(field: string) {
-        let newEntry = {
-            name: field,
-            tag: field,
-            default: false,
-            value: ""
+        let newEntry: BibTexEntry
+        if (field in bibTexEntries) {
+            const index = Object.keys(bibTexEntries).indexOf(field)
+            newEntry = {...Object.values(bibTexEntries)[index], default: false}
+        } else {
+            newEntry = {
+                name: field,
+                tag: field,
+                default: false,
+                value: ""
+            }
         }
+
         if (field !== "" && entries.map((entry) => {
             return entry.name
         }).indexOf(newEntry.name) === -1) {
             setEntries([...entries, newEntry])
+            setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, newEntry].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                return {...entry, default: false}
+            }))
             setNewField("")
         }
     }
@@ -92,6 +101,9 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         setArtTypeError(false)
                         setArtType(value.target.value as string)
                         setEntries(artTypeFields[value.target.value as string])
+                        setSuggestions(Object.values(bibTexEntries).filter((entry) => artTypeFields[value.target.value as string].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                            return {...entry, default: false}
+                        }))
                     }}/>
                 </Grid>
                 <Grid item>
@@ -114,11 +126,12 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                                     return obj
                                 }))
                             }} onClick={() => {
-                                if (suggestions_default.indexOf(entry.name) !== -1) {
-                                    setSuggestions([...suggestions, entry.name])
-                                }
-                                setEntries(entries.filter((element) => {
+                                const tempEntries = entries.filter((element) => {
                                     return element !== entry
+                                })
+                                setEntries(tempEntries)
+                                setSuggestions(Object.values(bibTexEntries).filter((entry) => tempEntries.map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                                    return {...entry, default: false}
                                 }))
                             }}/>
                         </Grid>
@@ -160,13 +173,13 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
                 {suggestions.map((suggestion) =>
                     (<Chip onClick={() => {
-                            setSuggestions(suggestions.filter((value) => {
-                                return value !== suggestion
+                            setEntries([...entries, suggestion])
+                            setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                                return {...entry, default: false}
                             }))
-                            addField(suggestion)
                         }
-                        } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion}
-                           label={suggestion}/>
+                        } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion.tag}
+                           label={suggestion.tag}/>
                     ))}
             </div>
         </div>
