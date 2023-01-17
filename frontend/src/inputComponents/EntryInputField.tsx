@@ -7,7 +7,7 @@ export function EntryInputField(props: { entry: BibTexEntry, onChange: (e: Chang
     return <TextField
         id="outlined-multiline-static"
         error={props.entry.error}
-        label={props.entry.name}
+        label={props.entry.tag}
         type={props.entry.type}
         value={props.entry.value}
         helperText={`Enter the ${props.entry.name}`}
