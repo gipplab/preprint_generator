@@ -165,22 +165,24 @@ export function PDFFileForm(props: PDFFileFormInterface) {
 
             </Grid>
             <h6>Add new fields</h6>
-            <div style={{display: "flex", alignItems: "flex-start"}}>
+            <div style={{display: "flex", alignItems: "center"}}>
                 <EntryFieldGenerator value={newField} onKeyDown={(e) => {
                     if (e.key === "Enter") {
                         handleSubmit()
                     }
                 }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
-                {suggestions.map((suggestion) =>
-                    (<Chip onClick={() => {
-                            setEntries([...entries, suggestion])
-                            setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
-                                return {...entry, default: false}
-                            }))
-                        }
-                        } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion.tag}
-                           label={suggestion.tag}/>
-                    ))}
+                <div style={{display: 'flex', flexWrap: 'wrap', paddingBottom: "20px"}}>
+                    {suggestions.map((suggestion) =>
+                        (<Chip onClick={() => {
+                                setEntries([...entries, suggestion])
+                                setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                                    return {...entry, default: false}
+                                }))
+                            }
+                            } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion.tag}
+                               label={suggestion.tag}/>
+                        ))}
+                </div>
             </div>
         </div>
     )

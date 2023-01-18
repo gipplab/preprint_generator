@@ -11,7 +11,7 @@ export function TagInputField(props: TagInputFieldInterface) {
     const [inputValue, setInputValue] = useState<string>('');
 
     return (
-        <div style={{display: "flex", alignItems: "start"}}>
+        <div style={{display: "flex", alignItems: "center"}}>
             <TextField
                 label="Tags"
                 style={{flexGrow: 0, flexShrink: 0}}
@@ -31,7 +31,7 @@ export function TagInputField(props: TagInputFieldInterface) {
                 variant="outlined"
                 helperText="Press enter to add a tag"
             />
-            <div style={{display: 'flex', flexWrap: 'wrap'}}>
+            <div style={{display: 'flex', flexWrap: 'wrap', paddingBottom: "20px"}}>
                 {props.keywords.map((tag) => (
                     <Chip
                         key={tag}
