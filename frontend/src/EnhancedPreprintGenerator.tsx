@@ -63,8 +63,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         });
     }
 
-    storePreprint(title: string, keywords: string[], doi?: string) {
-        fetch(`http://localhost:9000/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}`, {
+    storePreprint(title: string, keywords: string[], doi?: string, author?: string, url?: string, year?: string) {
+        fetch(`http://localhost:9000/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}${author ? "&author=" + author : ""}${url ? "&url=" + url : ""}${year ? "&year=" + year : ""}`, {
             method: 'PUT'
         }).then(_ => {
         }).catch(_ => {
@@ -79,7 +79,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             return undefined
         }
 
-        const result: { title: string, doi?: string, keywords: string[] }[] = JSON.parse(await response.text())
+        const result: { title: string, doi?: string, keywords: string[], author?: string, url?: string, year?: string }[] = JSON.parse(await response.text())
         return result.filter((preprint) => {
             return preprint.title !== title
         })
@@ -121,7 +121,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         }
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file} onSubmit={async (bibTexEntries, keywords) => {
-                                this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"])
+                                this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"], bibTexEntries["author"], bibTexEntries["url"], bibTexEntries["year"])
                                 const similarPreprints = await this.requestPreprints(bibTexEntries["title"], keywords)
                                 await createBibTexAnnotation(
                                     this.state.file!.file,

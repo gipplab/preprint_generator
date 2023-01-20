@@ -3,7 +3,7 @@ var router = express.Router();
 var {insertPreprint, getSimilarPreprints} = require("../database/database")
 
 router.put("/storePreprint", function (req, res, next) {
-    insertPreprint(req.query.title, req.query.doi, JSON.parse(req.query.keywords).map((keyword) => keyword.toLowerCase()));
+    insertPreprint(req.query.title, req.query.author, req.query.url, req.query.year, req.query.doi, JSON.parse(req.query.keywords).map((keyword) => keyword.toLowerCase()));
     res.send(req.query);
 });
 

@@ -11,7 +11,10 @@ const pool = new Pool({
 
 const createTableQuery = `CREATE TABLE IF NOT EXISTS preprints (
                         title VARCHAR(1000),
+                        author VARCHAR(1000),
+                        url VARCHAR(100),
                         doi VARCHAR(100),
+                        year VARCHAR(100),
                         keywords VARCHAR(100) ARRAY,
                         PRIMARY KEY (title)
                         );`
@@ -22,8 +25,8 @@ pool.query(createTableQuery).then(result => {
     }
 });
 
-async function insertPreprint(title, doi, keywords) {
-    await pool.query(`INSERT INTO preprints (title, doi, keywords) VALUES ($1, $2, $3) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, keywords = EXCLUDED.keywords;`, [title, doi, keywords])
+function insertPreprint(title, author, url, year, doi, keywords) {
+    pool.query(`INSERT INTO preprints (title, author,url, doi, year, keywords) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, author = EXCLUDED.author, url = EXCLUDED.url, year = EXCLUDED.year, keywords = EXCLUDED.keywords;`, [title, author, url, doi, year, keywords])
 }
 
 async function getSimilarPreprints(keywords) {
