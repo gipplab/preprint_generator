@@ -36,16 +36,24 @@ function doi2bibOptions(doi: string) {
     };
 }
 
-export async function doi2bib(doi_id: string): Promise<RelatedPaperInfo> {
+export async function doi2bib(doi_id: string): Promise<RelatedPaperInfo | null> {
     const doiOptions = doi2bibOptions(doi_id)
-    const res = await fetch(doiOptions.url, {headers: doiOptions.headers})
-    const text = await res.text()
+    let text: string
+    try {
+        const res = await fetch(doiOptions.url, {headers: doiOptions.headers})
+        text = await res.text()
+    } catch (_) {
+        return null
+    }
     const titleRes = text.match(/title = {(.+)},/)
     const authorRes = text.match(/author = {(.+)},/)
     const urlRes = text.match(/url = {(.+)},/)
     const doiRes = text.match(/doi = {(.+)},/)
     const yearRes = text.match(/year = {(.+)},/)
-    const title = (titleRes) ? (((titleRes.length > 1) ? titleRes[1] : doi_id)) : doi_id
+    const title = (titleRes) ? (((titleRes.length > 1) ? titleRes[1] : "Error")) : "Error"
+    if (title == "Error") {
+        return null
+    }
     const author = (authorRes) ? (((authorRes.length > 1) ? authorRes[1] : undefined)) : undefined
     const url = (urlRes) ? (((urlRes.length > 1) ? urlRes[1] : undefined)) : undefined
     const doi = (doiRes) ? (((doiRes.length > 1) ? doiRes[1] : undefined)) : undefined
@@ -61,15 +69,23 @@ function arxivid2doiOptions(arxivid: string) {
 }
 
 
-export async function arxivid2doi(arxivid: string): Promise<RelatedPaperInfo> {
+export async function arxivid2doi(arxivid: string): Promise<RelatedPaperInfo | null> {
     const arxivOptions = arxivid2doiOptions(arxivid)
-    const res = await fetch(arxivOptions.url)
-    const text = await res.text()
+    let text: string
+    try {
+        const res = await fetch(arxivOptions.url)
+        text = await res.text()
+    } catch (_) {
+        return null
+    }
     const titleRes = text.match(/<title>(.+)<\/title>/s)
     const authorRes = text.match(/<name>(.+)<\/name>/g)
     const urlRes = text.match(/<link href="(.+)" rel="alternate"/)
     const yearRes = text.match(/<published>(.+)<\/published>/)
-    const title = (titleRes) ? (((titleRes.length > 1) ? titleRes[1].replaceAll("\n", "").trim() : arxivid)) : arxivid
+    const title = (titleRes) ? (((titleRes.length > 1) ? titleRes[1].replaceAll("\n", "").trim() : "Error")) : "Error"
+    if (title == "Error") {
+        return null
+    }
     const author = (authorRes) ? (((authorRes.length > 1) ? authorRes.map(author => author.split("<name>")[1].split("</name>")[0]).join(", ") : undefined)) : undefined
     const url = (urlRes) ? (((urlRes.length > 1) ? urlRes[1] : undefined)) : undefined
     const year = (yearRes) ? (((yearRes.length > 1) ? (new Date(yearRes[1])).getFullYear().toString() : undefined)) : undefined

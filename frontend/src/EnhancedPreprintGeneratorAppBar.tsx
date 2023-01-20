@@ -6,7 +6,7 @@ import PowerOffIcon from "@mui/icons-material/PowerOff";
 import React from "react";
 
 export function EnhancedPreprintGeneratorAppBar(props: { file: PDFFile | undefined, apiConnected: boolean | undefined, onClick: () => void }) {
-    return <AppBar position="static">
+    return <AppBar position="sticky">
         <Toolbar style={{justifyContent: "space-between", alignItems: "center"}}>
             <div style={{flex: 0.33, display: "flex", alignItems: "center"}}>
                 <ArticleIcon/>
