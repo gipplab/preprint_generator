@@ -12,6 +12,10 @@ Node version: 16.13.0
 
 ## TODO
 
-- add fields for each article type : https://www.bibtex.com/e/entry-types/
-- add api to get other papers with title or doi to the related papers
-- rename similar papers to related papers
+- [x] add fields for each article type : https://www.bibtex.com/e/entry-types/
+- [x] add api to get other papers with title or doi to the related papers (https://www.doi2bib.org/)
+- [ ] add fetched related papers to the preprint
+- [ ] add a input for related papers
+- [x] rename similar papers to related papers
+- [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
+- [ ] add course information and page numbers to presentation

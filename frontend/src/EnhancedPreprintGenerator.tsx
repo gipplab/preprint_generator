@@ -7,6 +7,7 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
+import {arxivid2doi, doi2bib} from "./annotation/AnnotationAPI"
 
 const PDFJS = window.pdfjsLib;
 
@@ -86,6 +87,9 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     componentWillMount() {
         this.callAPI();
+        // TODO use this for related papers
+        doi2bib("https://doi.org/10.48550/arXiv.2008.08465").then(res => console.log(res))
+        arxivid2doi("2301.07713").then(res => console.log(res))
     }
 
     render() {

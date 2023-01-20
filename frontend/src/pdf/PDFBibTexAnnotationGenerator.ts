@@ -106,7 +106,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         similarPreprintsText += `${index + 1}) Title: ${preprint.title}, Keywords: ${preprint.keywords.join(", ")}\n\n`
     })
 
-    page.drawText("Similar Papers:", {x: 50, y: height - 135 - bibAnnotationHeight, size: 20, font: normalFont})
+    page.drawText("Related Papers:", {x: 50, y: height - 135 - bibAnnotationHeight, size: 20, font: normalFont})
     page.drawText(similarPreprintsText, {
         x: 55,
         y: height - 150 - bibAnnotationHeight - similarPreprintFontsize,
