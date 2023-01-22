@@ -27,6 +27,8 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         title: {name: "Title", tag: "title", default: true, value: props.info.title},
         ref: {name: "Reference", tag: "ref", default: true, value: props.info.artTitle},
         pages: {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
+        doi: {name: "DOI", tag: "doi", default: true, value: "", type: ""},
+        url: {name: "URL", tag: "url", default: true, value: "", type: ""},
         journal: {name: "Journal", tag: "journal", default: true, value: "", type: ""},
         volume: {name: "Volume", tag: "volume", default: true, value: "", type: "number"},
         number: {name: "Number", tag: "number", default: true, value: "", type: "number"},

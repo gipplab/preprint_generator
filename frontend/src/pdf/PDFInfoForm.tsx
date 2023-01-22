@@ -3,6 +3,7 @@ import {PDFFileForm} from "./PDFFileForm";
 import {TagInputField} from "../inputComponents/TagInputField";
 import React, {useState} from "react";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ClearIcon from '@mui/icons-material/Clear';
 import {
     Accordion, AccordionDetails, AccordionSummary,
     Button,
@@ -16,6 +17,7 @@ import {
 } from "@mui/material";
 import {TransitionProps} from "@mui/material/transitions";
 import {arxivid2doi, doi2bib, RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
+import {requestPreprints} from "../EnhancedPreprintGenerator";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -27,9 +29,10 @@ const Transition = React.forwardRef(function Transition(
 });
 
 
-export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { [id: string]: string }, keywords: string[]) => void }) {
+export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { [id: string]: string }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void }) {
     const [keywords, setKeywords] = useState<string[]>(props.file!.info.keywords)
     const [open, setOpen] = useState(false)
+    const [similarPapers, setSimilarPapers] = useState<RelatedPaperInfo[]>([])
     const [relatedPapers, setRelatedPapers] = useState<RelatedPaperInfo[]>([])
     const [relatedPaperTmp, setRelatedPaperTmp] = useState<RelatedPaperInfo | null>(null)
     const [id, setId] = useState("")
@@ -37,7 +40,7 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
         <div style={{width: "80%"}}>
             <h6>BibTex Information</h6>
             <PDFFileForm onSubmit={(bibTexEntries) => {
-                props.onSubmit(bibTexEntries, keywords)
+                props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
             }} info={props.file.info}/>
             <h6>Keywords</h6>
             <div style={{position: "relative", bottom: 0, left: 0}}>
@@ -45,7 +48,11 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
             </div>
             <h6>Add related papers</h6>
             <div style={{display: "flex", justifyContent: "flex-start", alignItems: "center"}}>
-                <Button style={{marginBottom: "16px"}} variant="contained" onClick={() => setOpen(true)}>
+                <Button style={{marginBottom: "16px"}} variant="contained"
+                        onClick={async () => {
+                            const loadedRelatedPapers = await requestPreprints("", keywords)
+                            setSimilarPapers(loadedRelatedPapers || [])
+                        }}>
                     Load Related Preprints based on Keywords
                 </Button>
                 <Button style={{marginLeft: "16px", marginBottom: "16px"}} variant="contained"
@@ -107,9 +114,10 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
             <div style={{marginBottom: "5%"}}>
                 {relatedPapers.map((relatedPaper) => {
                     return (
-                        <Accordion>
+                        <Accordion key={"rp" + relatedPaper.title}>
                             <AccordionSummary
-                                expandIcon={<ExpandMoreIcon/>}
+                                expandIcon={<><ExpandMoreIcon/><ClearIcon
+                                    onClick={() => setRelatedPapers(relatedPapers.filter((value) => value !== relatedPaper))}/></>}
                                 aria-controls="panel1a-content"
                                 id="panel1a-header"
                             >
@@ -118,6 +126,25 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
                             <AccordionDetails>
                                 <Typography style={{textAlign: "left"}}>
                                     {relatedPaperToString(relatedPaper)}
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    )
+                })}
+                {similarPapers.map((similarPaper) => {
+                    return (
+                        <Accordion key={"sp" + similarPaper.title}>
+                            <AccordionSummary
+                                expandIcon={<><ExpandMoreIcon/><ClearIcon
+                                    onClick={() => setSimilarPapers(similarPapers.filter((value) => value !== similarPaper))}/></>}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography style={{textAlign: "left"}}>{similarPaper.title}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography style={{textAlign: "left"}}>
+                                    {relatedPaperToString(similarPaper)}
                                 </Typography>
                             </AccordionDetails>
                         </Accordion>

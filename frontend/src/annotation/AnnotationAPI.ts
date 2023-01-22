@@ -2,7 +2,7 @@
 
 export interface RelatedPaperInfo {
     title: string,
-    authors?: string,
+    author?: string,
     url?: string,
     doi?: string,
     year?: string
@@ -11,8 +11,8 @@ export interface RelatedPaperInfo {
 
 export function relatedPaperToString(paper: RelatedPaperInfo) {
     let result = ""
-    if (paper.authors) {
-        result += paper.authors + ". "
+    if (paper.author) {
+        result += paper.author + ". "
     }
     result += paper.title + ". "
     if (paper.url) {
@@ -58,7 +58,7 @@ export async function doi2bib(doi_id: string): Promise<RelatedPaperInfo | null> 
     const url = (urlRes) ? (((urlRes.length > 1) ? urlRes[1] : undefined)) : undefined
     const doi = (doiRes) ? (((doiRes.length > 1) ? doiRes[1] : undefined)) : undefined
     const year = (yearRes) ? (((yearRes.length > 1) ? yearRes[1] : undefined)) : undefined
-    return {authors: author, doi: doi, title: title, url: url, year: year}
+    return {author: author, doi: doi, title: title, url: url, year: year}
 }
 
 function arxivid2doiOptions(arxivid: string) {
@@ -89,5 +89,5 @@ export async function arxivid2doi(arxivid: string): Promise<RelatedPaperInfo | n
     const author = (authorRes) ? (((authorRes.length > 1) ? authorRes.map(author => author.split("<name>")[1].split("</name>")[0]).join(", ") : undefined)) : undefined
     const url = (urlRes) ? (((urlRes.length > 1) ? urlRes[1] : undefined)) : undefined
     const year = (yearRes) ? (((yearRes.length > 1) ? (new Date(yearRes[1])).getFullYear().toString() : undefined)) : undefined
-    return {authors: author, title: title, url: url, year: year}
+    return {author: author, title: title, url: url, year: year}
 }

@@ -42,8 +42,6 @@ export function parsePDF(file: PDFDocument, text: { firstPage: any; text: string
     let doi
     let artTitle = ((author || title).replace(/\s/g, '')) + date.getFullYear()
     let keywords: string[] = extractKeywords(text.text, 10)
-    console.log(keywords)
-
 
     return {artType, author, date, pages, artTitle, title, volume, issn, number, journal, doi, keywords}
 }

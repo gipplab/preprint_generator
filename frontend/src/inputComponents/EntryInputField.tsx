@@ -1,6 +1,6 @@
 import React, {ChangeEvent} from "react";
 import {IconButton, InputAdornment, TextField} from "@mui/material";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import ClearIcon from '@mui/icons-material/Clear';
 import {BibTexEntry} from "../pdf/PDFFileForm";
 
 export function EntryInputField(props: { entry: BibTexEntry, onChange: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void, onClick: () => void }) {
@@ -20,7 +20,7 @@ export function EntryInputField(props: { entry: BibTexEntry, onChange: (e: Chang
                     <InputAdornment position="end">
                         <IconButton edge="end" color="primary"
                                     onClick={props.onClick}>
-                            <RemoveCircleOutlineIcon/>
+                            <ClearIcon/>
                         </IconButton>
                     </InputAdornment>)
             }

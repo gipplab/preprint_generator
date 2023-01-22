@@ -7,7 +7,7 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
-import {arxivid2doi, doi2bib} from "./annotation/AnnotationAPI"
+import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
 
 const PDFJS = window.pdfjsLib;
 
@@ -35,8 +35,6 @@ const darkTheme = createTheme({
 async function getPDFText(base64File: string) {
     const pdfJSFile = await PDFJS.getDocument(base64File).promise
     const numPages = pdfJSFile.numPages;
-    console.log(await pdfJSFile.getMetadata())
-    console.log(await (await pdfJSFile.getPage(1)).getTextContent())
     const firstPage = await (await pdfJSFile.getPage(1)).getTextContent()
     let text = '';
     for (let i = 2; i <= numPages; i++) {
@@ -47,6 +45,20 @@ async function getPDFText(base64File: string) {
         }).join(" ")
     }
     return {firstPage: firstPage, text}
+}
+
+export async function requestPreprints(title: string, keywords: string[]) {
+    let response
+    try {
+        response = await fetch(`http://localhost:9000/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
+    } catch (e) {
+        return undefined
+    }
+
+    const result: RelatedPaperInfo[] = JSON.parse(await response.text())
+    return result.filter((preprint) => {
+        return preprint.title !== title
+    })
 }
 
 class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
@@ -71,25 +83,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         })
     }
 
-    async requestPreprints(title: string, keywords: string[]) {
-        let response
-        try {
-            response = await fetch(`http://localhost:9000/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
-        } catch (e) {
-            return undefined
-        }
-
-        const result: { title: string, doi?: string, keywords: string[], author?: string, url?: string, year?: string }[] = JSON.parse(await response.text())
-        return result.filter((preprint) => {
-            return preprint.title !== title
-        })
-    }
-
     componentWillMount() {
         this.callAPI();
-        // TODO use this for related papers
-        doi2bib("https://doi.org/10.48550/arXiv.2008.08465").then(res => console.log(res))
-        arxivid2doi("2301.07713").then(res => console.log(res))
     }
 
     render() {
@@ -120,16 +115,16 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                             }}/>
                         }
                         {this.state.file &&
-                            <PDFInfoForm file={this.state.file} onSubmit={async (bibTexEntries, keywords) => {
-                                this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"], bibTexEntries["author"], bibTexEntries["url"], bibTexEntries["year"])
-                                const similarPreprints = await this.requestPreprints(bibTexEntries["title"], keywords)
-                                await createBibTexAnnotation(
-                                    this.state.file!.file,
-                                    this.state.file!.name,
-                                    bibTexEntries,
-                                    similarPreprints
-                                )
-                            }}/>
+                            <PDFInfoForm file={this.state.file}
+                                         onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
+                                             this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"], bibTexEntries["author"], bibTexEntries["url"], bibTexEntries["year"])
+                                             await createBibTexAnnotation(
+                                                 this.state.file!.file,
+                                                 this.state.file!.name,
+                                                 bibTexEntries,
+                                                 similarPreprints
+                                             )
+                                         }}/>
                         }
                     </header>
                 </div>
