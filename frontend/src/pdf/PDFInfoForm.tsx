@@ -5,13 +5,13 @@ import React, {useState} from "react";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
 import {
-    Accordion, AccordionDetails, AccordionSummary,
+    Accordion, AccordionDetails, AccordionSummary, Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogContentText,
-    DialogTitle,
+    DialogTitle, IconButton,
     Slide, styled,
     TextField, Typography
 } from "@mui/material";
@@ -115,14 +115,21 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
                 {relatedPapers.map((relatedPaper) => {
                     return (
                         <Accordion key={"rp" + relatedPaper.title}>
-                            <AccordionSummary
-                                expandIcon={<><ExpandMoreIcon/><ClearIcon
-                                    onClick={() => setRelatedPapers(relatedPapers.filter((value) => value !== relatedPaper))}/></>}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <Typography style={{textAlign: "left"}}>{relatedPaper.title}</Typography>
-                            </AccordionSummary>
+                            <Box sx={{display: "flex", alignItems: "center"}}>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon/>}
+                                    aria-controls="panel1a-content"
+                                    sx={{flexGrow: 1}}
+                                    id="panel1a-header"
+                                >
+                                    <Typography style={{textAlign: "left"}}>{relatedPaper.title}</Typography>
+                                </AccordionSummary>
+                                <IconButton style={{marginLeft: "-20px"}}>
+                                    <ClearIcon
+                                        onClick={() => setRelatedPapers(relatedPapers.filter((value) => value !== relatedPaper))}/>
+                                </IconButton>
+
+                            </Box>
                             <AccordionDetails>
                                 <Typography style={{textAlign: "left"}}>
                                     {relatedPaperToString(relatedPaper)}
@@ -134,14 +141,21 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
                 {similarPapers.map((similarPaper) => {
                     return (
                         <Accordion key={"sp" + similarPaper.title}>
-                            <AccordionSummary
-                                expandIcon={<><ExpandMoreIcon/><ClearIcon
-                                    onClick={() => setSimilarPapers(similarPapers.filter((value) => value !== similarPaper))}/></>}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <Typography style={{textAlign: "left"}}>{similarPaper.title}</Typography>
-                            </AccordionSummary>
+                            <Box sx={{display: "flex", alignItems: "center"}}>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon/>}
+                                    aria-controls="panel1a-content"
+                                    sx={{flexGrow: 1}}
+                                    id="panel1a-header"
+                                >
+                                    <Typography style={{textAlign: "left"}}>{similarPaper.title}</Typography>
+                                </AccordionSummary>
+                                <IconButton style={{marginLeft: "-20px"}}>
+                                    <ClearIcon
+                                        onClick={() => setRelatedPapers(similarPapers.filter((value) => value !== similarPaper))}/>
+                                </IconButton>
+
+                            </Box>
                             <AccordionDetails>
                                 <Typography style={{textAlign: "left"}}>
                                     {relatedPaperToString(similarPaper)}
