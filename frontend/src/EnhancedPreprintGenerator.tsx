@@ -8,7 +8,7 @@ import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
-import config from "./../config.json"
+import config from "./config.json"
 
 const PDFJS = window.pdfjsLib;
 
