@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var testAPIRouter = require("./routes/testAPI");
 var databaseRouter = require("./routes/database");
-var config = require("config.json")
+var config = require("./config.json")
 
 var cors = require("cors");
 
