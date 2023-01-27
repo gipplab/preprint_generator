@@ -56,16 +56,9 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
-    let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]},\n title={${bibTexEntries["title"]}}`
-    const [year, month] = bibTexEntries["publish"].split("-").map((part) => {
-        return parseInt(part)
-    })
-    bibAnnotationText += `,\n year={${year}}`
-    bibAnnotationText += `,\n month={${month}}`
+    let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]}`
     delete bibTexEntries["artType"]
-    delete bibTexEntries["title"]
     delete bibTexEntries["ref"]
-    delete bibTexEntries["publish"]
     for (let key in bibTexEntries) {
         let value = bibTexEntries[key];
         if (value !== "") {

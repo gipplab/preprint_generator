@@ -23,9 +23,9 @@ export interface BibTexEntry {
 
 export function PDFFileForm(props: PDFFileFormInterface) {
     const bibTexEntries = {
-        author: {name: "Author (seperated by comma)", tag: "author", default: true, value: props.info.author || ""},
-        title: {name: "Title", tag: "title", default: true, value: props.info.title},
         ref: {name: "Reference", tag: "ref", default: true, value: props.info.artTitle},
+        title: {name: "Title", tag: "title", default: true, value: props.info.title},
+        author: {name: "Author (seperated by comma)", tag: "author", default: true, value: props.info.author || ""},
         pages: {name: "Pages", tag: "pages", default: true, value: "" + props.info.pages, type: "number"},
         doi: {name: "DOI", tag: "doi", default: true, value: "", type: ""},
         url: {name: "URL", tag: "url", default: true, value: "", type: ""},
@@ -143,10 +143,11 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                     <GenerateButton onClick={() => {
                         const bibTexEntries: { [id: string]: string } = {}
                         bibTexEntries["artType"] = artType
-                        bibTexEntries["publish"] = `${publishDate.getFullYear()}-${('0' + (publishDate.getMonth() + 1)).slice(-2)}`
                         entries.forEach((entry) => {
                             bibTexEntries[entry.tag] = entry.value
                         })
+                        bibTexEntries["year"] = "" + publishDate.getFullYear()
+                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
                         let generate = true
                         if (artType === "") {
                             generate = false
