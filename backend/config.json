@@ -3,5 +3,6 @@
   "database_host": "localhost",
   "database_name": "preprint_db",
   "database_password": "preprint",
-  "database_port": 5432
+  "database_port": 5432,
+  "cors_url": "http://localhost:3000"
 }

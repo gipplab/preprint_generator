@@ -8,6 +8,7 @@ import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
+import config from "./../config.json"
 
 const PDFJS = window.pdfjsLib;
 
@@ -50,7 +51,7 @@ async function getPDFText(base64File: string) {
 export async function requestPreprints(title: string, keywords: string[]) {
     let response
     try {
-        response = await fetch(`http://localhost:9000/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
+        response = await fetch(`${config.backend_url}/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
     } catch (e) {
         return undefined
     }
@@ -68,7 +69,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     }
 
     callAPI() {
-        fetch("http://localhost:9000/testAPI")
+        fetch(`${config.backend_url}/testAPI`)
             .then(res => res.text())
             .then(_ => this.setState({apiConnected: true})).catch(() => {
             this.setState({apiConnected: false})
@@ -76,7 +77,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     }
 
     storePreprint(title: string, keywords: string[], doi?: string, author?: string, url?: string, year?: string) {
-        fetch(`http://localhost:9000/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}${author ? "&author=" + author : ""}${url ? "&url=" + url : ""}${year ? "&year=" + year : ""}`, {
+        fetch(`${config.backend_url}/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}${author ? "&author=" + author : ""}${url ? "&url=" + url : ""}${year ? "&year=" + year : ""}`, {
             method: 'PUT'
         }).then(_ => {
         }).catch(_ => {
