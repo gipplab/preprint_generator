@@ -152,7 +152,7 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
                                 </AccordionSummary>
                                 <IconButton style={{marginLeft: "-20px"}}>
                                     <ClearIcon
-                                        onClick={() => setRelatedPapers(similarPapers.filter((value) => value !== similarPaper))}/>
+                                        onClick={() => setSimilarPapers(similarPapers.filter((value) => value !== similarPaper))}/>
                                 </IconButton>
 
                             </Box>
