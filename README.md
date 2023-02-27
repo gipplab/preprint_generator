@@ -1,20 +1,38 @@
 # Enhanced Preprint Generator
 
-## Setup
+The Enhanced Preprint Generator is a powerful tool that allows users to generate preprints with suggested related papers and add a BibTeX annotation to the PDF.
 
-Node version: 16.13.0
+## Prerequisites
+
+To use the Enhanced Preprint Generator, you must have Node version 16.13.0 or higher installed on your machine.
+
+## Getting Started
+
+To get started, simply clone this repository and follow the instructions in the frontend and backend READMEs:
+
+ - [Frontend README](frontend/README.md)
+ - [Backend README](backend/README.md)
+
+## Features
+
+The Enhanced Preprint Generator offers the following features:
+
+ - Generate preprints with more related papers: The tool utilizes powerful algorithms to suggest related papers to include in your preprint, helping you to create more comprehensive and impactful research.
+ - Add a BibTeX annotation to the PDF: The tool also generates a BibTeX annotation, which can be used to easily cite your preprint in other works.
+
+## Contributing
+
+We welcome contributions to the Enhanced Preprint Generator! If you encounter a bug, have a feature request, or would like to contribute code, please open an issue or pull request on this repository.
+
+## License 
+
+This project is licensed under the MIT License. Please refer to the [LICENSE](COPYING) file for more information.
 
 ## Useful resources
 
- - https://pdf-lib.js.org/ (edit pdfs)
- - https://react-pdf.org/ (view pdfs)
- - https://expressjs.com/de/ (backend: store and search meta tags)
+ - [Edit PDFs](https://pdf-lib.js.org/)
+ - [Express](https://expressjs.com/de/)
 
 ## TODO
 
-- [x] add fields for each article type : https://www.bibtex.com/e/entry-types/
-- [x] add api to get other papers with title or doi to the related papers (https://www.doi2bib.org/)
-- [x] add fetched related papers to the preprint
-- [x] add a input for related papers
-- [x] rename similar papers to related papers
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
