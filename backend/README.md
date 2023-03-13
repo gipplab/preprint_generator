@@ -4,7 +4,7 @@ The Enhanced Preprint Generator Backend is written in Javascript with Express, a
 
 ## Prerequisites
 
-To use the Enhanced Preprint Generator Backend, you need to have Node.js and npm installed on your machine.
+To use the Enhanced Preprint Generator, you must have Node version 16.13.0 or higher installed on your machine.
 
 ## Getting Started
 
