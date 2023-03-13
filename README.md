@@ -1,5 +1,8 @@
 # Enhanced Preprint Generator
 
+[Try it yourself!](https://preprint.larskaesberg.de/)
+----
+
 The Enhanced Preprint Generator is a powerful tool that allows users to generate preprints with suggested related papers and add a BibTeX annotation to the PDF.
 
 ## Prerequisites
@@ -17,7 +20,7 @@ To get started, simply clone this repository and follow the instructions in the 
 
 The Enhanced Preprint Generator offers the following features:
 
- - Generate preprints with more related papers: The tool utilizes powerful algorithms to suggest related papers to include in your preprint, helping you to create more comprehensive and impactful research.
+ - Generate preprints with related papers: The tool utilizes powerful algorithms to suggest related papers to include in your preprint, helping you to create more comprehensive and impactful research.
  - Add a BibTeX annotation to the PDF: The tool also generates a BibTeX annotation, which can be used to easily cite your preprint in other works.
 
 ## Contributing
