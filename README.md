@@ -30,6 +30,19 @@ We welcome contributions to the Enhanced Preprint Generator! If you encounter a 
 
 This project is licensed under the MIT License. Please refer to the [LICENSE](COPYING) file for more information.
 
+## Demo
+Website: [https://preprint.larskaesberg.de](https://preprint.larskaesberg.de)
+### Hompage
+![EPG-Demo1.png](pictures%2FEPG-Demo1.png)
+
+-----
+### Metadata Form
+![EPG-Demo3.png](pictures%2FEPG-Demo3.png)
+
+-----
+### BibTex annotation
+![EPG-Demo4.png](pictures%2FEPG-Demo4.png)
+
 ## Useful resources
 
  - [Edit PDFs](https://pdf-lib.js.org/)
@@ -38,3 +51,4 @@ This project is licensed under the MIT License. Please refer to the [LICENSE](CO
 ## TODO
 
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
+- [ ] website for each preprint in backend (pdf, annotation, related papers)
