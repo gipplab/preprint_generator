@@ -52,3 +52,4 @@ Website: [https://preprint.larskaesberg.de](https://preprint.larskaesberg.de)
 
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
 - [ ] website for each preprint in backend (pdf, annotation, related papers)
+- [ ] [alpaca lora](https://github.com/tloen/alpaca-lora) for metadata extraction
