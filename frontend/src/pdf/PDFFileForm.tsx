@@ -167,7 +167,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 </Grid>
 
             </Grid>
-            <h6>Add new fields</h6>
+            <br/>
             <div style={{display: "flex", alignItems: "center"}}>
                 <EntryFieldGenerator value={newField} onKeyDown={(e) => {
                     if (e.key === "Enter") {

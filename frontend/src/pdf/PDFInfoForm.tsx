@@ -38,15 +38,15 @@ export function PDFInfoForm(props: { file: PDFFile, onSubmit: (bibTexEntries: { 
     const [id, setId] = useState("")
     return <>
         <div style={{width: "80%"}}>
-            <h6>BibTex Information</h6>
+            <h6>1. Edit BibTex Information</h6>
             <PDFFileForm onSubmit={(bibTexEntries) => {
                 props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
             }} info={props.file.info}/>
-            <h6>Keywords</h6>
+            <h6>2. Edit relevant preprint Keywords</h6>
             <div style={{position: "relative", bottom: 0, left: 0}}>
                 <TagInputField keywords={keywords} setKeywords={setKeywords}/>
             </div>
-            <h6>Add related papers</h6>
+            <h6>3. Add related papers</h6>
             <div style={{display: "flex", justifyContent: "flex-start", alignItems: "center"}}>
                 <Button style={{marginBottom: "16px"}} variant="contained"
                         onClick={async () => {
