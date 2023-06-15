@@ -11,16 +11,16 @@ function saveByteArray(reportName: string, byte: Uint8Array) {
 
 
 const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: number, y: number, scale: number } = {
-    x: 200,
-    y: 70,
-    scale: 0.2
+    x: 120,
+    y: 60,
+    scale: 0.1
 }) => {
 
     let firstPage = pdfDoc.getPage(0)
     let bibPage = pdfDoc.addPage([firstPage.getWidth(), firstPage.getHeight()])
     let pageRef = bibPage.ref
     const {width, height} = firstPage.getSize()
-    let buttonImageBytes = await fetch("/citation_button.png").then((res) => res.arrayBuffer())
+    let buttonImageBytes = await fetch("/citation_button_small.png").then((res) => res.arrayBuffer())
     let buttonImage = await pdfDoc.embedPng(buttonImageBytes)
     let buttonScale = buttonImage.scale(position.scale)
     firstPage.drawImage(buttonImage, {
