@@ -9,6 +9,7 @@ import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
 import config from "./config.json"
+import darkTheme from "./theme";
 
 const PDFJS = window.pdfjsLib;
 
@@ -28,6 +29,7 @@ interface StorePreprintArgs {
     author?: string;
     url?: string;
     year?: string;
+    annotation?: string;
     file?: PDFFile;
 }
 
@@ -36,12 +38,6 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = error => reject(error);
-});
-
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
 });
 
 async function getPDFText(base64File: string) {
@@ -89,7 +85,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
 
     async storePreprint(args: StorePreprintArgs) {
-        const {title, keywords, doi, author, url, year, file} = args;
+        const {title, keywords, doi, author, url, year, annotation, file} = args;
 
         let file_base64 = '';
         if (file) {
@@ -103,6 +99,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             author: author,
             url: url,
             year: year,
+            annotation: annotation,
             file: file_base64, // Base64 encoded file
         };
 
@@ -154,9 +151,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file}
                                          onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
-                                             //TODO file gets overwritten after each generation
-                                             const fileBackup = this.state.file
-                                             await createBibTexAnnotation(
+                                             const fileBackup = await this.state.file!.file.copy()
+                                             const annotationText = await createBibTexAnnotation(
                                                  this.state.file!.file,
                                                  this.state.file!.name,
                                                  bibTexEntries,
@@ -169,9 +165,16 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                                  author: bibTexEntries["author"],
                                                  url: bibTexEntries["url"],
                                                  year: bibTexEntries["year"],
+                                                 annotation: annotationText,
                                                  file: this.state.file
                                              })
-                                             this.setState({file:fileBackup})
+                                             this.setState({
+                                                 file: {
+                                                     file: fileBackup,
+                                                     info: this.state.file!.info,
+                                                     name: this.state.file!.name
+                                                 }
+                                             })
                                          }}/>
                         }
                     </header>

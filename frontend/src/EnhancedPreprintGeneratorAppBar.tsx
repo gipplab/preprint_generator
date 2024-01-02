@@ -5,7 +5,11 @@ import PowerIcon from "@mui/icons-material/Power";
 import PowerOffIcon from "@mui/icons-material/PowerOff";
 import React from "react";
 
-export function EnhancedPreprintGeneratorAppBar(props: { file: PDFFile | undefined, apiConnected: boolean | undefined, onClick: () => void }) {
+export function EnhancedPreprintGeneratorAppBar(props: {
+    file: PDFFile | undefined,
+    apiConnected: boolean | undefined,
+    onClick: (() => void) | undefined
+}) {
     return <AppBar position="sticky">
         <Toolbar style={{justifyContent: "space-between", alignItems: "center"}}>
             <div style={{flex: 0.33, display: "flex", alignItems: "center"}}>
@@ -23,7 +27,8 @@ export function EnhancedPreprintGeneratorAppBar(props: { file: PDFFile | undefin
                 {props.apiConnected ? (
                     <Tooltip title="API connected!"><PowerIcon/></Tooltip>) : (
                     <Tooltip title="API disconnected!"><PowerOffIcon/></Tooltip>)}
-                <Button color="inherit" onClick={props.onClick}>Reset Document</Button>
+                {props.onClick && <Button color="inherit" onClick={props.onClick}>Reset Document</Button>}
+
             </div>
         </Toolbar>
     </AppBar>;

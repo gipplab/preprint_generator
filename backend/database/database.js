@@ -17,6 +17,7 @@ const createTableQuery = `
         doi VARCHAR(100),
         year VARCHAR(100),
         path VARCHAR(1000),
+        annotation VARCHAR(10000),
         keywords VARCHAR(100) ARRAY,
         PRIMARY KEY (title)
     );`;
@@ -27,8 +28,8 @@ pool.query(createTableQuery).then(result => {
     }
 });
 
-function insertPreprint(title, author, url, year, doi, keywords, pdfPath) {
-    pool.query(`INSERT INTO preprints (title, author, url, doi, year, path,keywords) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, author = EXCLUDED.author, url = EXCLUDED.url, year = EXCLUDED.year, path = EXCLUDED.path, keywords = EXCLUDED.keywords;`, [title, author, url, doi, year, pdfPath,keywords]);
+function insertPreprint(title, author, url, year, doi, annotation, keywords, path) {
+    pool.query(`INSERT INTO preprints (title, author, url, doi, year, path, annotation,keywords) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, author = EXCLUDED.author, url = EXCLUDED.url, year = EXCLUDED.year, path = EXCLUDED.path, keywords = EXCLUDED.keywords, annotation = EXCLUDED.annotation;`, [title, author, url, doi, year, path, annotation, keywords]);
 }
 
 
@@ -49,5 +50,11 @@ async function getSimilarPreprints(keywords) {
     })
 }
 
+async function getPreprint(title) {
+    const result = await pool.query(`SELECT * FROM preprints WHERE title = $1`, [title]);
+    return result.rows[0];
+}
+
+exports.getPreprint = getPreprint
 exports.insertPreprint = insertPreprint
 exports.getSimilarPreprints = getSimilarPreprints

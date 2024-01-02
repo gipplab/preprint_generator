@@ -52,7 +52,9 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
     return bibPage
 }
 
-async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: { [id: string]: string }, similarPreprints?: RelatedPaperInfo[]) {
+async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: {
+    [id: string]: string
+}, similarPreprints?: RelatedPaperInfo[]) {
     const {width, height} = page.getSize()
     let normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     let annotationFont = await pdfDoc.embedFont(StandardFonts.Courier)
@@ -72,9 +74,38 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     let bibAnnotationHeight = bibAnnotationFontsize * lineCount * 1.5
     page.drawText("Citation for this Paper", {x: 150, y: height - 50, size: 30, font: normalFont})
     page.drawText("BibTeX:", {x: 50, y: height - 90, size: 20, font: normalFont})
+
+    const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+    const url = `${baseUrl}/preprint/${bibTexEntries["title"]}`; // Adjust title for URL
+    const urlLink = pdfDoc.context.register(
+        pdfDoc.context.obj({
+            Type: 'Annot',
+            Subtype: 'Link',
+            Rect: [50, height - 140, 260, height - 110], // Adjust these coordinates as needed
+            Border: [0, 0, 2],
+            A: {
+                Type: 'Action',
+                S: 'URI',
+                URI: pdfDoc.context.obj(url)
+            }
+        })
+    );
+
+    page.node.set(PDFName.of('Annots'), pdfDoc.context.obj([urlLink]));
+
+    const text = 'Explore This Preprint on Our Web Portal';
+    const fontSize = 12; // Adjust as needed
+    page.drawText(text, {
+        x: 50, // Align this with the Rect coordinates
+        y: height - 130, // Align this with the Rect coordinates
+        size: fontSize,
+        font: await pdfDoc.embedFont(StandardFonts.Helvetica),
+        color: rgb(0, 0, 1) // Blue color, adjust as needed
+    });
+
     page.drawText(bibAnnotationText, {
         x: 55,
-        y: height - 105 - bibAnnotationFontsize,
+        y: height - 155 - bibAnnotationFontsize,
         maxWidth: width - 100,
         wordBreaks: [""],
         lineHeight: bibAnnotationFontsize * 1.5,
@@ -83,7 +114,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     })
     page.drawRectangle({
         x: 50,
-        y: height - 110 - bibAnnotationHeight,
+        y: height - 160 - bibAnnotationHeight,
         width: width - 100,
         height: bibAnnotationHeight + 10,
         borderWidth: 1,
@@ -91,7 +122,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         borderColor: rgb(0, 0, 0)
     })
     if (!similarPreprints || similarPreprints.length == 0) {
-        return
+        return bibAnnotationText
     }
 
     let similarPreprintFontsize = 12
@@ -109,12 +140,17 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         size: similarPreprintFontsize,
         font: normalFont
     })
+
+    return bibAnnotationText
 }
 
-export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: { [id: string]: string }, similarPreprints?: RelatedPaperInfo[]) {
+export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: {
+    [id: string]: string
+}, similarPreprints?: RelatedPaperInfo[]) {
     let pdfDoc = file
     let bibPage = await createPageLinkAnnotation(pdfDoc)
-    await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries, similarPreprints)
+    const annotationText = await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries, similarPreprints)
     let pdfBytes = await pdfDoc.save()
     saveByteArray(name, pdfBytes);
+    return annotationText
 }
