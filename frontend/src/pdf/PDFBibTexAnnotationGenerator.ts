@@ -1,4 +1,4 @@
-import {breakTextIntoLines, PDFDocument, PDFName, PDFPage, rgb, StandardFonts} from "pdf-lib";
+import {breakTextIntoLines, PDFDocument, PDFName, PDFPage, PDFString, rgb, StandardFonts} from "pdf-lib";
 import {RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
 
 function saveByteArray(reportName: string, byte: Uint8Array) {
@@ -41,7 +41,7 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
                 height - position.y + buttonScale.height, // upper right y coord
             ],
             /* Give the link a 2-unit-wide border, with sharp corners */
-            Border: [0, 0, 2],
+            Border: [0, 0, 0],
             /* Make the border color blue: rgb(0, 0, 1) */
             C: [0, 0, 1],
             /* Page to be visited when the link is clicked */
@@ -81,13 +81,15 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
         pdfDoc.context.obj({
             Type: 'Annot',
             Subtype: 'Link',
-            Rect: [50, height - 140, 260, height - 110], // Adjust these coordinates as needed
-            Border: [0, 0, 2],
+            Rect: [50, height - 140, 270, height - 110], // Adjust these coordinates as needed
+            Border: [0, 0, 0],
+            /* Make the border color blue: rgb(0, 0, 1) */
+            C: [0, 0, 1],
             A: {
                 Type: 'Action',
                 S: 'URI',
-                URI: pdfDoc.context.obj(url)
-            }
+                URI: PDFString.of(url),
+            },
         })
     );
 
