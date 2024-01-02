@@ -20,6 +20,17 @@ interface AppState {
     file?: PDFFile;
 }
 
+
+interface StorePreprintArgs {
+    title: string;
+    keywords: string[];
+    doi?: string;
+    author?: string;
+    url?: string;
+    year?: string;
+    file?: PDFFile;
+}
+
 const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -76,13 +87,38 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         });
     }
 
-    storePreprint(title: string, keywords: string[], doi?: string, author?: string, url?: string, year?: string) {
-        fetch(`${config.backend_url}/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}${author ? "&author=" + author : ""}${url ? "&url=" + url : ""}${year ? "&year=" + year : ""}`, {
-            method: 'PUT'
+
+    async storePreprint(args: StorePreprintArgs) {
+        const {title, keywords, doi, author, url, year, file} = args;
+
+        let file_base64 = '';
+        if (file) {
+            file_base64 = await file.file.saveAsBase64();
+        }
+
+        const payload = {
+            title: title,
+            keywords: keywords,
+            doi: doi,
+            author: author,
+            url: url,
+            year: year,
+            file: file_base64, // Base64 encoded file
+        };
+
+        fetch(`${config.backend_url}/database/storePreprint`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         }).then(_ => {
+            // Handle success
         }).catch(_ => {
-        })
+            // Handle error
+        });
     }
+
 
     componentWillMount() {
         this.callAPI();
@@ -118,13 +154,24 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file}
                                          onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
-                                             this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"], bibTexEntries["author"], bibTexEntries["url"], bibTexEntries["year"])
+                                             //TODO file gets overwritten after each generation
+                                             const fileBackup = this.state.file
                                              await createBibTexAnnotation(
                                                  this.state.file!.file,
                                                  this.state.file!.name,
                                                  bibTexEntries,
                                                  similarPreprints
                                              )
+                                             await this.storePreprint({
+                                                 title: bibTexEntries["title"],
+                                                 keywords: keywords,
+                                                 doi: bibTexEntries["doi"],
+                                                 author: bibTexEntries["author"],
+                                                 url: bibTexEntries["url"],
+                                                 year: bibTexEntries["year"],
+                                                 file: this.state.file
+                                             })
+                                             this.setState({file:fileBackup})
                                          }}/>
                         }
                     </header>

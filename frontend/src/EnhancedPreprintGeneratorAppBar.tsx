@@ -12,7 +12,7 @@ export function EnhancedPreprintGeneratorAppBar(props: { file: PDFFile | undefin
                 <ArticleIcon/>
             </div>
             <Typography variant="h5" component="div" style={{flex: 0.33}}>
-                {props.file ? props.file.name : "Enhanced Preprint Generator"}
+                {props.file ? props.file.name : "CiteAssist"}
             </Typography>
             <div style={{
                 flex: 0.33,

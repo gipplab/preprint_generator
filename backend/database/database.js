@@ -9,15 +9,17 @@ const pool = new Pool({
     port: credentials.database_port,
 })
 
-const createTableQuery = `CREATE TABLE IF NOT EXISTS preprints (
-                        title VARCHAR(1000),
-                        author VARCHAR(1000),
-                        url VARCHAR(100),
-                        doi VARCHAR(100),
-                        year VARCHAR(100),
-                        keywords VARCHAR(100) ARRAY,
-                        PRIMARY KEY (title)
-                        );`
+const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS preprints (
+        title VARCHAR(1000),
+        author VARCHAR(1000),
+        url VARCHAR(100),
+        doi VARCHAR(100),
+        year VARCHAR(100),
+        path VARCHAR(1000),
+        keywords VARCHAR(100) ARRAY,
+        PRIMARY KEY (title)
+    );`;
 
 pool.query(createTableQuery).then(result => {
     if (result) {
@@ -25,9 +27,10 @@ pool.query(createTableQuery).then(result => {
     }
 });
 
-function insertPreprint(title, author, url, year, doi, keywords) {
-    pool.query(`INSERT INTO preprints (title, author,url, doi, year, keywords) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, author = EXCLUDED.author, url = EXCLUDED.url, year = EXCLUDED.year, keywords = EXCLUDED.keywords;`, [title, author, url, doi, year, keywords])
+function insertPreprint(title, author, url, year, doi, keywords, pdfPath) {
+    pool.query(`INSERT INTO preprints (title, author, url, doi, year, path,keywords) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (title) DO UPDATE SET doi = EXCLUDED.doi, author = EXCLUDED.author, url = EXCLUDED.url, year = EXCLUDED.year, path = EXCLUDED.path, keywords = EXCLUDED.keywords;`, [title, author, url, doi, year, pdfPath,keywords]);
 }
+
 
 async function getSimilarPreprints(keywords) {
     function comparePreprints(obj1, obj2) {
