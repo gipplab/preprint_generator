@@ -146,6 +146,7 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         entries.forEach((entry) => {
                             bibTexEntries[entry.tag] = entry.value
                         })
+                        bibTexEntries["title"] = bibTexEntries["title"].replace(/\s+/g, " ")
                         bibTexEntries["year"] = "" + publishDate.getFullYear()
                         bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
                         let generate = true
