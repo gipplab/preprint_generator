@@ -52,7 +52,7 @@ const createPageLinkAnnotation = async (pdfDoc: PDFDocument, position: { x: numb
     return bibPage
 }
 
-async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEntries: {
+async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, uuid: string, bibTexEntries: {
     [id: string]: string
 }, similarPreprints?: RelatedPaperInfo[]) {
     const {width, height} = page.getSize()
@@ -76,7 +76,7 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     page.drawText("BibTeX:", {x: 50, y: height - 90, size: 20, font: normalFont})
 
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-    const url = `${baseUrl}/preprint/${bibTexEntries["title"]}`; // Adjust title for URL
+    const url = `${baseUrl}/preprint/${uuid}`; // Adjust title for URL
     const urlLink = pdfDoc.context.register(
         pdfDoc.context.obj({
             Type: 'Annot',
@@ -146,12 +146,12 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, bibTexEnt
     return bibAnnotationText
 }
 
-export async function createBibTexAnnotation(file: PDFDocument, name: string, bibTexEntries: {
+export async function createBibTexAnnotation(file: PDFDocument, name: string, uuid: string, bibTexEntries: {
     [id: string]: string
 }, similarPreprints?: RelatedPaperInfo[]) {
     let pdfDoc = file
     let bibPage = await createPageLinkAnnotation(pdfDoc)
-    const annotationText = await addBibTexAnnotation(pdfDoc, bibPage, bibTexEntries, similarPreprints)
+    const annotationText = await addBibTexAnnotation(pdfDoc, bibPage, uuid, bibTexEntries, similarPreprints)
     let pdfBytes = await pdfDoc.save()
     saveByteArray(name, pdfBytes);
     return annotationText

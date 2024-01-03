@@ -12,7 +12,6 @@ router.get('/preprint/:title', async function (req, res) {
     const title = req.params.title;
     try {
         // Fetch preprint information from the database
-        console.log(title)
         const preprint = await getPreprint(title);
         if (!preprint) {
             return res.status(404).send('Preprint not found');
@@ -29,8 +28,7 @@ router.get('/preprint/:title', async function (req, res) {
         // Send the PDF file content
         res.send(pdfFile);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).send('Couldn\'t find the requested file!');
     }
 });
 

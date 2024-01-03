@@ -7,11 +7,11 @@ const {getPreprint} = require("../database/database"); // Assume you have a func
 
 
 router.put("/storePreprint", async function (req, res, next) {
-    const {title, author, url, year, doi, keywords, annotation, file} = req.body;
+    const {id, title, author, url, year, doi, keywords, annotation, file} = req.body;
 
     // Decode the base64 string and save it as a PDF
     const buffer = Buffer.from(file, 'base64');
-    const pdfPath = path.join(__dirname, "..", 'uploads', `${title.replace(/\s+/g, '_')}.pdf`);
+    const pdfPath = path.join(__dirname, "..", 'uploads', `${id}.pdf`);
 
     try {
         fs.writeFileSync(pdfPath, buffer);
@@ -20,9 +20,9 @@ router.put("/storePreprint", async function (req, res, next) {
     }
 
     // Call insertPreprint with the new filePath argument
-    await insertPreprint(title, author, url, year, doi, annotation, keywords.map(keyword => keyword.toLowerCase()), pdfPath);
+    await insertPreprint(id, title, author, url, year, doi, annotation, keywords.map(keyword => keyword.toLowerCase()), pdfPath);
 
-    res.send({title, author, url, year, doi, annotation, keywords, pdfPath});
+    res.send({id, title, author, url, year, doi, annotation, keywords, pdfPath});
 });
 
 router.get('/getRelatedPreprints', async function (req, res, next) {

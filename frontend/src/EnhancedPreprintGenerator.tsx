@@ -8,6 +8,7 @@ import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
+import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
 import darkTheme from "./theme";
 
@@ -30,6 +31,7 @@ interface StorePreprintArgs {
     url?: string;
     year?: string;
     annotation?: string;
+    uuid: string
     file?: PDFFile;
 }
 
@@ -85,7 +87,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
 
     async storePreprint(args: StorePreprintArgs) {
-        const {title, keywords, doi, author, url, year, annotation, file} = args;
+        const {title, keywords, doi, author, url, year, annotation, uuid, file} = args;
 
         let file_base64 = '';
         if (file) {
@@ -93,6 +95,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         }
 
         const payload = {
+            id: uuid,
             title: title,
             keywords: keywords,
             doi: doi,
@@ -152,9 +155,11 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                             <PDFInfoForm file={this.state.file}
                                          onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
                                              const fileBackup = await this.state.file!.file.copy()
+                                             const uuid = uuidv4()
                                              const annotationText = await createBibTexAnnotation(
                                                  this.state.file!.file,
                                                  this.state.file!.name,
+                                                 uuid,
                                                  bibTexEntries,
                                                  similarPreprints
                                              )
@@ -166,7 +171,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                                  url: bibTexEntries["url"],
                                                  year: bibTexEntries["year"],
                                                  annotation: annotationText,
-                                                 file: this.state.file
+                                                 file: this.state.file,
+                                                 uuid: uuid
                                              })
                                              this.setState({
                                                  file: {
