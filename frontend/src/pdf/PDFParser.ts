@@ -32,7 +32,7 @@ export function parsePDF(file: PDFDocument, text: { firstPage: any; text: string
         return item.height == maxHeight
     }).map((item: any) => {
         return item.str
-    }).join(" ").trim() || file.getTitle() || name.substring(0, name.length - 4).replace(/\s+/g, " ")
+    }).join(" ").trim().replace(/\s+/g, " ") || file.getTitle().replace(/\s+/g, " ") || name.substring(0, name.length - 4).replace(/\s+/g, " ")
     let pages = file.getPageCount()
     let date = file.getCreationDate() || new Date()
     let volume
