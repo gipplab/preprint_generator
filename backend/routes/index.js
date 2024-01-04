@@ -11,24 +11,22 @@ router.get('/', function (req, res, next) {
 router.get('/preprint/:id', async function (req, res) {
     const id = req.params.id;
     try {
-        // Fetch preprint information from the database
         const preprint = await getPreprint(id);
+        console.log('Preprint fetched:', preprint);
+
         if (!preprint) {
             return res.status(404).send('Preprint not found');
         }
 
-        // Fetch the PDF file
-        console.log(preprint)
-        const pdfPath = preprint.path; // Assuming this is the path where the PDF is stored
-        const pdfFile = fs.readFileSync(pdfPath);
+        console.log('Fetching PDF from:', preprint.path);
+        const pdfFile = fs.readFileSync(preprint.path);
 
-        // Set appropriate headers
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + preprint.title || id + '.pdf"');
+        res.setHeader('Content-Disposition', 'inline; filename="' + (preprint.title || id) + '.pdf"');
 
-        // Send the PDF file content
         res.send(pdfFile);
     } catch (error) {
+        console.error('Error in fetching preprint:', error);
         res.status(500).send('Couldn\'t find the requested file!');
     }
 });
