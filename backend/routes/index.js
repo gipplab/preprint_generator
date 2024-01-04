@@ -12,17 +12,16 @@ router.get('/preprint/:id', async function (req, res) {
     const id = req.params.id;
     try {
         const preprint = await getPreprint(id);
-        console.log('Preprint fetched:', preprint);
 
         if (!preprint) {
             return res.status(404).send('Preprint not found');
         }
 
-        console.log('Fetching PDF from:', preprint.path);
         const pdfFile = fs.readFileSync(preprint.path);
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + (preprint.title || id) + '.pdf"');
+        const filename = encodeURIComponent(preprint.title) + '.pdf';
+        res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
 
         res.send(pdfFile);
     } catch (error) {
@@ -31,10 +30,10 @@ router.get('/preprint/:id', async function (req, res) {
     }
 });
 
-router.get('/preprint/info/:title', async function (req, res) {
-    const title = req.params.title;
+router.get('/preprint/info/:id', async function (req, res) {
+    const id = req.params.id;
     try {
-        const preprintInfo = await getPreprint(title);
+        const preprintInfo = await getPreprint(id);
         if (!preprintInfo) {
             return res.status(404).send('Preprint information not found');
         }
