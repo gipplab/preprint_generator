@@ -18,6 +18,7 @@ router.get('/preprint/:id', async function (req, res) {
         }
 
         // Fetch the PDF file
+        console.log(preprint)
         const pdfPath = preprint.path; // Assuming this is the path where the PDF is stored
         const pdfFile = fs.readFileSync(pdfPath);
 
