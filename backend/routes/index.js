@@ -8,11 +8,11 @@ router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
 
-router.get('/preprint/:title', async function (req, res) {
-    const title = req.params.title;
+router.get('/preprint/:id', async function (req, res) {
+    const id = req.params.title;
     try {
         // Fetch preprint information from the database
-        const preprint = await getPreprint(title);
+        const preprint = await getPreprint(id);
         if (!preprint) {
             return res.status(404).send('Preprint not found');
         }
@@ -23,7 +23,7 @@ router.get('/preprint/:title', async function (req, res) {
 
         // Set appropriate headers
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + preprint.title + '.pdf"');
+        res.setHeader('Content-Disposition', 'inline; filename="' + preprint.title || id + '.pdf"');
 
         // Send the PDF file content
         res.send(pdfFile);
