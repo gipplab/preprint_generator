@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/preprint/:id', async function (req, res) {
-    const id = req.params.title;
+    const id = req.params.id;
     try {
         // Fetch preprint information from the database
         const preprint = await getPreprint(id);
