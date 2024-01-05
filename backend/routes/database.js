@@ -1,10 +1,28 @@
-var express = require('express');
-var router = express.Router();
-var {insertPreprint, getSimilarPreprints} = require("../database/database")
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const {insertPreprint, getSimilarPreprints} = require("../database/database");
+const fs = require('fs');
+const {getPreprint} = require("../database/database"); // Assume you have a function to get preprint details
 
-router.put("/storePreprint", function (req, res, next) {
-    insertPreprint(req.query.title, req.query.author, req.query.url, req.query.year, req.query.doi, JSON.parse(req.query.keywords).map((keyword) => keyword.toLowerCase()));
-    res.send(req.query);
+
+router.put("/storePreprint", async function (req, res, next) {
+    const {id, title, author, url, year, doi, keywords, annotation, file} = req.body;
+
+    // Decode the base64 string and save it as a PDF
+    const buffer = Buffer.from(file, 'base64');
+    const pdfPath = path.join(__dirname, "..", 'uploads', `${id}.pdf`);
+
+    try {
+        fs.writeFileSync(pdfPath, buffer);
+    } catch (error) {
+        return res.status(500).send({error: "Error saving file"});
+    }
+
+    // Call insertPreprint with the new filePath argument
+    await insertPreprint(id, title, author, url, year, doi, annotation, keywords.map(keyword => keyword.toLowerCase()), pdfPath);
+
+    res.send({id, title, author, url, year, doi, annotation, keywords, pdfPath});
 });
 
 router.get('/getRelatedPreprints', async function (req, res, next) {

@@ -8,7 +8,9 @@ import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
+import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
+import darkTheme from "./theme";
 
 const PDFJS = window.pdfjsLib;
 
@@ -20,17 +22,24 @@ interface AppState {
     file?: PDFFile;
 }
 
+
+interface StorePreprintArgs {
+    title: string;
+    keywords: string[];
+    doi?: string;
+    author?: string;
+    url?: string;
+    year?: string;
+    annotation?: string;
+    uuid: string
+    file?: PDFFile;
+}
+
 const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = error => reject(error);
-});
-
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
 });
 
 async function getPDFText(base64File: string) {
@@ -76,13 +85,40 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         });
     }
 
-    storePreprint(title: string, keywords: string[], doi?: string, author?: string, url?: string, year?: string) {
-        fetch(`${config.backend_url}/database/storePreprint?title=${title}&keywords=${JSON.stringify(keywords)}${doi ? "&doi=" + doi : ""}${author ? "&author=" + author : ""}${url ? "&url=" + url : ""}${year ? "&year=" + year : ""}`, {
-            method: 'PUT'
+
+    async storePreprint(args: StorePreprintArgs) {
+        const {title, keywords, doi, author, url, year, annotation, uuid, file} = args;
+
+        let file_base64 = '';
+        if (file) {
+            file_base64 = await file.file.saveAsBase64();
+        }
+
+        const payload = {
+            id: uuid,
+            title: title,
+            keywords: keywords,
+            doi: doi,
+            author: author,
+            url: url,
+            year: year,
+            annotation: annotation,
+            file: file_base64, // Base64 encoded file
+        };
+
+        fetch(`${config.backend_url}/database/storePreprint`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         }).then(_ => {
+            // Handle success
         }).catch(_ => {
-        })
+            // Handle error
+        });
     }
+
 
     componentWillMount() {
         this.callAPI();
@@ -98,7 +134,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                             this.setState({file: undefined})
                         }}
                     />
-                    <header className="App-header">
+                    <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
                         {!this.state.file &&
                             <PDFFileUploader handleChange={async (file: any) => {
                                 let base64File = await toBase64(file)
@@ -118,19 +154,40 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file}
                                          onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
-                                             this.storePreprint(bibTexEntries["title"], keywords, bibTexEntries["doi"], bibTexEntries["author"], bibTexEntries["url"], bibTexEntries["year"])
-                                             await createBibTexAnnotation(
+                                             const fileBackup = await this.state.file!.file.copy()
+                                             const uuid = uuidv4()
+                                             const annotationText = await createBibTexAnnotation(
                                                  this.state.file!.file,
                                                  this.state.file!.name,
+                                                 uuid,
                                                  bibTexEntries,
                                                  similarPreprints
                                              )
+                                             await this.storePreprint({
+                                                 title: bibTexEntries["title"],
+                                                 keywords: keywords,
+                                                 doi: bibTexEntries["doi"],
+                                                 author: bibTexEntries["author"],
+                                                 url: bibTexEntries["url"],
+                                                 year: bibTexEntries["year"],
+                                                 annotation: annotationText,
+                                                 file: this.state.file,
+                                                 uuid: uuid
+                                             })
+                                             this.setState({
+                                                 file: {
+                                                     file: fileBackup,
+                                                     info: this.state.file!.info,
+                                                     name: this.state.file!.name
+                                                 }
+                                             })
                                          }}/>
                         }
                     </header>
                 </div>
             </ThemeProvider>
-        );
+        )
+            ;
     }
 }
 

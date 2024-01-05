@@ -4,7 +4,7 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 
 export function EntryFieldGenerator(props: { value: string, onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void, onChange: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void, onClick: () => void }) {
     return <TextField
-        label="New Field"
+        label="Add New Field"
         value={props.value}
         helperText="Press enter to add a new field"
         onKeyDown={(e) => {
