@@ -46,7 +46,7 @@ const PreprintViewer = () => {
         <ThemeProvider theme={darkTheme}>
             <Box className="App">
                 <EnhancedPreprintGeneratorAppBar file={undefined} apiConnected={true} onClick={undefined}/>
-                <header className={"App-header"}>
+                <header className={"App-header"} style={{justifyContent: "center"}}>
                     <Container maxWidth="lg">
                         <Grid container spacing={3}>
                             {preprint && (
