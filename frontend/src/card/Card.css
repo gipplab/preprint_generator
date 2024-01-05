@@ -1,0 +1,24 @@
+/* Card.css */
+
+.card {
+    background: #282c34;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0);
+    margin: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 1);
+}
+
+.card-content {
+    padding: 16px;
+}
+
+.card-title {
+    color: white;
+    font-size: 0.8em;
+    margin: 0 0 10px;
+}

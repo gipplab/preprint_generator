@@ -9,7 +9,14 @@ import {ArticleTypeSelect} from "../inputComponents/ArticleTypeSelect";
 
 interface PDFFileFormInterface {
     info: PDFInfo
-    onSubmit: (bibTexEntries: { [id: string]: string }) => void
+    entries: BibTexEntry[]
+    setEntries: React.Dispatch<React.SetStateAction<BibTexEntry[]>>
+    publishDate: Date
+    setPublishDate: React.Dispatch<React.SetStateAction<Date>>
+    artType: string
+    setArtType: React.Dispatch<React.SetStateAction<string>>
+    artTypeError: boolean
+    setArtTypeError: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export interface BibTexEntry {
@@ -58,13 +65,9 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         "techreport": [bibTexEntries.ref, bibTexEntries.title, bibTexEntries.author, bibTexEntries.institution, bibTexEntries.address, bibTexEntries.number],
         "unpublished": [bibTexEntries.ref, bibTexEntries.author, bibTexEntries.title],
     }
-    const [entries, setEntries] = useState<BibTexEntry[]>([]);
     const [suggestions, setSuggestions] = useState<BibTexEntry[]>([])
 
     let [newField, setNewField] = useState("")
-    let [publishDate, setPublishDate] = useState(props.info.date)
-    let [artType, setArtType] = useState("")
-    let [artTypeError, setArtTypeError] = useState(false)
 
     function addField(field: string) {
         let newEntry: BibTexEntry
@@ -80,11 +83,11 @@ export function PDFFileForm(props: PDFFileFormInterface) {
             }
         }
 
-        if (field !== "" && entries.map((entry) => {
+        if (field !== "" && props.entries.map((entry) => {
             return entry.name
         }).indexOf(newEntry.name) === -1) {
-            setEntries([...entries, newEntry])
-            setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, newEntry].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+            props.setEntries([...props.entries, newEntry])
+            setSuggestions(Object.values(bibTexEntries).filter((entry) => [...props.entries, newEntry].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
                 return {...entry, default: false}
             }))
             setNewField("")
@@ -99,39 +102,39 @@ export function PDFFileForm(props: PDFFileFormInterface) {
         <div>
             <Grid container spacing={2} style={{display: "flex"}}>
                 <Grid item>
-                    <ArticleTypeSelect value={artType} error={artTypeError} onChange={(value) => {
-                        setArtTypeError(false)
-                        setArtType(value.target.value as string)
-                        setEntries(artTypeFields[value.target.value as string])
+                    <ArticleTypeSelect value={props.artType} error={props.artTypeError} onChange={(value) => {
+                        props.setArtTypeError(false)
+                        props.setArtType(value.target.value as string)
+                        props.setEntries(artTypeFields[value.target.value as string])
                         setSuggestions(Object.values(bibTexEntries).filter((entry) => artTypeFields[value.target.value as string].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
                             return {...entry, default: false}
                         }))
                     }}/>
                 </Grid>
                 <Grid item>
-                    <PublishDateSelector publishDate={publishDate} onChange={(e) => {
+                    <PublishDateSelector publishDate={props.publishDate} onChange={(e) => {
                         const [year, month] = e.target.value.split("-").map((part: string) => {
                             return parseInt(part)
                         })
-                        setPublishDate(new Date(year, month - 1))
+                        props.setPublishDate(new Date(year, month - 1))
                     }}/>
                 </Grid>
                 {
-                    entries.map((entry) => (
+                    props.entries.map((entry) => (
                         <Grid item key={entry.tag}>
                             <EntryInputField entry={entry} onChange={(e) => {
                                 entry.error = false
-                                setEntries(entries.map((obj) => {
+                                props.setEntries(props.entries.map((obj) => {
                                     if (obj === entry) {
                                         return {...obj, value: e.target.value}
                                     }
                                     return obj
                                 }))
                             }} onClick={() => {
-                                const tempEntries = entries.filter((element) => {
+                                const tempEntries = props.entries.filter((element) => {
                                     return element !== entry
                                 })
-                                setEntries(tempEntries)
+                                props.setEntries(tempEntries)
                                 setSuggestions(Object.values(bibTexEntries).filter((entry) => tempEntries.map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
                                     return {...entry, default: false}
                                 }))
@@ -139,34 +142,6 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         </Grid>
                     ))
                 }
-                <Grid item>
-                    <GenerateButton onClick={() => {
-                        const bibTexEntries: { [id: string]: string } = {}
-                        bibTexEntries["artType"] = artType
-                        entries.forEach((entry) => {
-                            bibTexEntries[entry.tag] = entry.value
-                        })
-                        bibTexEntries["title"] = bibTexEntries["title"].replace(/\s+/g, " ")
-                        bibTexEntries["year"] = "" + publishDate.getFullYear()
-                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
-                        let generate = true
-                        if (artType === "") {
-                            generate = false
-                            setArtTypeError(true)
-                        }
-                        setEntries(entries.map((entry) => {
-                            if (entry.value === "") {
-                                generate = false
-                                return {...entry, error: true}
-                            }
-                            return entry
-                        }))
-                        if (generate) {
-                            props.onSubmit(bibTexEntries)
-                        }
-                    }}/>
-                </Grid>
-
             </Grid>
             <br/>
             <div style={{display: "flex", alignItems: "center"}}>
@@ -178,8 +153,8 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                 <div style={{display: 'flex', flexWrap: 'wrap', paddingBottom: "20px"}}>
                     {suggestions.map((suggestion) =>
                         (<Chip onClick={() => {
-                                setEntries([...entries, suggestion])
-                                setSuggestions(Object.values(bibTexEntries).filter((entry) => [...entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                                props.setEntries([...props.entries, suggestion])
+                                setSuggestions(Object.values(bibTexEntries).filter((entry) => [...props.entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
                                     return {...entry, default: false}
                                 }))
                             }

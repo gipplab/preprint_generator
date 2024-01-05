@@ -1,15 +1,19 @@
-import React, { ChangeEvent, useState, useEffect, useRef } from "react";
-import { IconButton, InputAdornment, TextField } from "@mui/material";
+import React, {ChangeEvent, useState, useEffect, useRef} from "react";
+import {IconButton, InputAdornment, TextField} from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
-import { BibTexEntry } from "../pdf/PDFFileForm";
+import {BibTexEntry} from "../pdf/PDFFileForm";
 
-export function EntryInputField(props: { entry: BibTexEntry, onChange: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void, onClick: () => void }) {
+export function EntryInputField(props: {
+    entry: BibTexEntry,
+    onChange: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void,
+    onClick: () => void
+}) {
     const [inputWidth, setInputWidth] = useState('auto');
     const textMeasureRef = useRef<HTMLSpanElement>(null);
 
     const updateWidth = () => {
         if (textMeasureRef.current) {
-            const maxWidth = window.innerWidth * 0.8;
+            const maxWidth = window.innerWidth * 0.8 - 100;
             const textWidth = textMeasureRef.current.offsetWidth;
             const calculatedWidth = Math.min(Math.max(200, textWidth + 60), maxWidth); // +40 for some padding
             setInputWidth(`${calculatedWidth}px`);
@@ -53,7 +57,7 @@ export function EntryInputField(props: { entry: BibTexEntry, onChange: (e: Chang
                     props.onChange(e);
                     updateWidth();
                 }}
-                style={{ width: inputWidth }}
+                style={{width: inputWidth}}
                 {...(!props.entry.default ? {
                     InputProps: {
                         endAdornment: (

@@ -134,7 +134,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                             this.setState({file: undefined})
                         }}
                     />
-                    <header className="App-header">
+                    <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
                         {!this.state.file &&
                             <PDFFileUploader handleChange={async (file: any) => {
                                 let base64File = await toBase64(file)
@@ -186,7 +186,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                     </header>
                 </div>
             </ThemeProvider>
-        );
+        )
+            ;
     }
 }
 
