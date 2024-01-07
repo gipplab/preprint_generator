@@ -1,5 +1,22 @@
 const {Pool} = require('pg')
 const credentials = require("../config.json")
+// Load wink-nlp package.
+const winkNLP = require('wink-nlp');
+// Load english language model.
+const model = require('wink-eng-lite-web-model');
+// Instantiate winkNLP.
+const nlp = winkNLP(model);
+// Obtain "its" helper to extract item properties.
+const its = nlp.its;
+// Obtain "as" reducer helper to reduce a collection.
+const as = nlp.as;
+
+function lemmatizeKeywords(keywords) {
+    return keywords.map((keyword) => {
+        const doc = nlp.readDoc(keyword);
+        return doc.tokens().out(its.lemma).join(" ");
+    });
+}
 
 const pool = new Pool({
     user: credentials.database_user,
@@ -31,11 +48,14 @@ pool.query(createTableQuery).then(result => {
 });
 
 function insertPreprint(id, title, author, url, year, doi, annotation, keywords, path) {
-    pool.query(`INSERT INTO preprints (id, title, author, url, doi, year, path, annotation,keywords) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`, [id, title, author, url, doi, year, path, annotation, keywords]);
+    const lemmatizedKeywords = lemmatizeKeywords(keywords);
+    pool.query(`INSERT INTO preprints (id, title, author, url, doi, year, path, annotation,keywords) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`, [id, title, author, url, doi, year, path, annotation, lemmatizedKeywords]);
 }
 
 
 async function getSimilarPreprints(keywords) {
+    const lemmatizedKeywords = lemmatizeKeywords(keywords);
+
     function comparePreprints(obj1, obj2) {
         return obj1.title === obj2.title && obj1.doi === obj2.doi;
     }
@@ -53,7 +73,7 @@ async function getSimilarPreprints(keywords) {
                 GROUP BY title
             ) latest
             ON p.title = latest.title AND p.created_at = latest.max_created_at;
-        `, [keyword]);
+        `, [lemmatizedKeywords]);
 
         res.rows.forEach(row => similarPreprints.push(row));
     }
