@@ -72,16 +72,20 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, uuid: str
     const textWidth = (t: string) => annotationFont.widthOfTextAtSize(t, bibAnnotationFontsize);
     const lineCount = breakTextIntoLines(bibAnnotationText, [""], width - 100, textWidth).length;
     let bibAnnotationHeight = bibAnnotationFontsize * lineCount * 1.5
-    page.drawText("Citation for this Paper", {x: 150, y: height - 50, size: 30, font: normalFont})
-    page.drawText("BibTeX:", {x: 50, y: height - 90, size: 20, font: normalFont})
-
+    page.drawText("Citation for this Paper", {
+        x: (width / 2) - (normalFont.widthOfTextAtSize("Citation for this Paper", 30) / 2),
+        y: height - 50,
+        size: 30,
+        font: normalFont
+    })
+    page.drawText("BibTeX Annotation:", {x: 50, y: height - 130, size: 20, font: normalFont})
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
     const url = `${baseUrl}/preprint/${uuid}`; // Adjust title for URL
     const urlLink = pdfDoc.context.register(
         pdfDoc.context.obj({
             Type: 'Annot',
             Subtype: 'Link',
-            Rect: [50, height - 140, 270, height - 110], // Adjust these coordinates as needed
+            Rect: [50, height - 100, 270, height - 70], // Adjust these coordinates as needed
             Border: [0, 0, 0],
             /* Make the border color blue: rgb(0, 0, 1) */
             C: [0, 0, 1],
@@ -95,14 +99,14 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, uuid: str
 
     page.node.set(PDFName.of('Annots'), pdfDoc.context.obj([urlLink]));
 
-    const text = 'Explore This Preprint on Our Web Portal';
+    const text = 'Click here for the Online Version';
     const fontSize = 12; // Adjust as needed
     page.drawText(text, {
         x: 50, // Align this with the Rect coordinates
-        y: height - 130, // Align this with the Rect coordinates
+        y: height - 90, // Align this with the Rect coordinates
         size: fontSize,
         font: await pdfDoc.embedFont(StandardFonts.Helvetica),
-        color: rgb(0, 0, 1) // Blue color, adjust as needed
+        color: rgb(0, 0, 0.9375) // Blue color, adjust as needed
     });
 
     page.drawText(bibAnnotationText, {
@@ -121,7 +125,8 @@ async function addBibTexAnnotation(pdfDoc: PDFDocument, page: PDFPage, uuid: str
         height: bibAnnotationHeight + 10,
         borderWidth: 1,
         opacity: 0,
-        borderColor: rgb(0, 0, 0)
+        borderColor: rgb(0, 0, 0),
+
     })
     if (!similarPreprints || similarPreprints.length == 0) {
         return bibAnnotationText
