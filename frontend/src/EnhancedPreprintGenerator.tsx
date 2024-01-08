@@ -7,7 +7,7 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
-import {arxivid2doi, doi2bib, RelatedPaperInfo} from "./annotation/AnnotationAPI"
+import {RelatedPaperInfo} from "./annotation/AnnotationAPI"
 import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
 import darkTheme from "./theme";
