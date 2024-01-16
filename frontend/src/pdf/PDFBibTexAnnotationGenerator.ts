@@ -1,75 +1,96 @@
 import {PDFDocument, PDFName} from 'pdf-lib';
 import {jsPDF} from 'jspdf';
-import html2canvas from 'html2canvas';
+import {RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
 
 function saveByteArray(reportName: string, byte: Uint8Array) {
-    var blob = new Blob([byte], {type: "application/pdf"});
-    var link = document.createElement('a');
+    const blob = new Blob([byte], {type: "application/pdf"});
+    const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
     link.download = reportName;
     link.click();
-};
+}
 
 
-
-function createCitationPDF(): ArrayBuffer {
-    const pdf = new jsPDF();
-    const leftMargin = 20;
-    const topMargin = 20;
+function createCitationPDF(uuid: string, size: { width: number, height: number }, bibTexEntries: {
+    [id: string]: string
+}, similarPreprints?: RelatedPaperInfo[]): { pdf: ArrayBuffer, text: string } {
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: [size.width, size.height]
+    });
+    const leftMargin = 50;
+    const topMargin = 50;
     const pageWidth = pdf.internal.pageSize.getWidth();
 
     // Header Title
-    pdf.setFontSize(16);
+    pdf.setFontSize(25);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Citation for this Paper', leftMargin, topMargin);
 
     // Online Version Link
     pdf.setFontSize(12);
+    pdf.setTextColor("#0000EE")
     pdf.setFont('helvetica', 'normal');
-    pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin + 10, { url: 'http://example.com' });
+    const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+    const url = `${baseUrl}/preprint/${uuid}`;
+    pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin + 30, {url: url});
 
     // Citation Box
-    const citationStartY = topMargin + 20;
-    const citationBoxPadding = 10;
+    const citationStartY = topMargin + 50;
+    const citationBoxPadding = 40;
     pdf.setFont('courier', 'normal');
+    pdf.setTextColor("#000000")
     pdf.setFontSize(12);
 
-    const citationText = `@techreport{citeassist,
-  title={Citeassist: Enhancing Scholarly Workflow through Automated Preprint Citation and BibTeX Generation},
-  author={anonymous},
-  institution={anonymous},
-  address={anonymous},
-  number={1},
-  year={2024},
-  month={01}
-}`;
-    const lines = pdf.splitTextToSize(citationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
-    const citationBoxHeight = lines.length * 4 * 1.15 + 2 * citationBoxPadding; // 6 is an approximate line height
+    let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]}`
+    delete bibTexEntries["artType"]
+    delete bibTexEntries["ref"]
+    for (let key in bibTexEntries) {
+        let value = bibTexEntries[key];
+        if (value !== "") {
+            bibAnnotationText += `,\n ${key}={${value}}`
+        }
+    }
+    bibAnnotationText += "\n}"
 
-    const cornerRadius = 5; // Radius of the rounded corners
+    const linesBibtex = pdf.splitTextToSize(bibAnnotationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
+    const citationBoxHeight = linesBibtex.length * 12 * 1.1 + 2 * citationBoxPadding;
+
+    const cornerRadius = 20; // Radius of the rounded corners
     pdf.roundedRect(leftMargin, citationStartY, pageWidth - 2 * leftMargin, citationBoxHeight, cornerRadius, cornerRadius);
-    pdf.text(lines, leftMargin + citationBoxPadding, citationStartY + citationBoxPadding); // Adjust as per line height
+    pdf.text(linesBibtex, leftMargin + citationBoxPadding, citationStartY + citationBoxPadding); // Adjust as per line height
+
+    if (!similarPreprints || similarPreprints.length === 0) {
+        return {pdf: pdf.output('arraybuffer'), text: bibAnnotationText}
+    }
 
     // Related Papers Section
-    const relatedPapersStartY = citationStartY + citationBoxHeight + 20;
+    const relatedPapersStartY = citationStartY + citationBoxHeight + 50;
     pdf.setFont('helvetica', 'bold');
     pdf.text('Related Papers', leftMargin, relatedPapersStartY);
 
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    const relatedPapersText = '1. Anonymous. Enhanced Preprint Generator. 2024.';
-    pdf.text(relatedPapersText, leftMargin, relatedPapersStartY + 10);
+
+    let similarPreprintsText = ""
+    similarPreprints.forEach((preprint, index) => {
+        similarPreprintsText += `${index + 1}) ${relatedPaperToString(preprint)}\n\n`
+    })
+
+    const linesRelatedPapers = pdf.splitTextToSize(similarPreprintsText, pageWidth - 2 * leftMargin);
+
+    pdf.text(linesRelatedPapers, leftMargin, relatedPapersStartY + 50);
 
     // Output as array buffer to merge with the existing PDF
-    return pdf.output('arraybuffer');
+    return {pdf: pdf.output('arraybuffer'), text: bibAnnotationText}
 }
 
 
 async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuffer): Promise<PDFDocument> {
     const citationPdfDoc = await PDFDocument.load(citationPdfBytes);
-    const originalPageCount = originalPdfDoc.getPageCount();
-
-    // Merge the PDFs
+    originalPdfDoc.getPageCount();
+// Merge the PDFs
     const copiedPages = await originalPdfDoc.copyPages(citationPdfDoc, citationPdfDoc.getPageIndices());
     copiedPages.forEach(page => originalPdfDoc.addPage(page));
 
@@ -121,14 +142,16 @@ export async function createBibTexAnnotation(file: PDFDocument, name: string, uu
 }, similarPreprints?: any[]): Promise<string> {
 
     // Create a PDF from the HTML content
-    const citationPdfBytes = createCitationPDF();
+    const citation = createCitationPDF(uuid, file.getPage(0).getSize(), bibTexEntries, similarPreprints);
+    const bibTexText = citation.text
+    const bibTexBytes = citation.pdf
 
     // Merge the new citation PDF with the original PDF
-    let pdfBytes = await mergePDFs(file, citationPdfBytes);
+    let pdfBytes = await mergePDFs(file, bibTexBytes);
 
     // Save the merged PDF
     saveByteArray(name, await pdfBytes.save());
 
     // Return the annotation text (or modify as per your requirement)
-    return "Annotation Text";
+    return bibTexText;
 }
