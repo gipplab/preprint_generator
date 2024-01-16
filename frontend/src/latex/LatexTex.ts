@@ -8,7 +8,8 @@ export function generateLatexTex(annotation: string, link: string, relatedPapers
         annotation +
         "\\end{bibtexannotation}\n" +
         "\n" +
-        "\\begin{relatedpapers}\n" +
-        relatedPapers.map((rel) => `    \\relatedpaper{${rel}}\n`).join("") +
-        "\\end{relatedpapers}"
+        (relatedPapers.length !== 0 ?
+            "\\begin{relatedpapers}\n" +
+            relatedPapers.map((rel) => `    \\relatedpaper{${rel}}\n`).join("") +
+            "\\end{relatedpapers}" : "")
 }

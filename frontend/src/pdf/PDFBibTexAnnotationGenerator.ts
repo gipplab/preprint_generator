@@ -137,7 +137,7 @@ async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuf
 }
 
 
-export async function createBibTexAnnotation(file: PDFDocument, name: string, uuid: string, bibTexEntries: {
+export async function createBibTexAnnotation(file: PDFDocument, name: string, uuid: string, download: boolean, bibTexEntries: {
     [id: string]: string
 }, similarPreprints?: any[]): Promise<string> {
 
@@ -150,7 +150,9 @@ export async function createBibTexAnnotation(file: PDFDocument, name: string, uu
     let pdfBytes = await mergePDFs(file, bibTexBytes);
 
     // Save the merged PDF
-    saveByteArray(name, await pdfBytes.save());
+    if (download) {
+        saveByteArray(name, await pdfBytes.save());
+    }
 
     // Return the annotation text (or modify as per your requirement)
     return bibTexText;

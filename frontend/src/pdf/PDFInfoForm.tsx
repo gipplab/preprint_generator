@@ -34,7 +34,10 @@ const Transition = React.forwardRef(function Transition(
 
 export function PDFInfoForm(props: {
     file: PDFFile,
-    onSubmit: (bibTexEntries: {
+    onSubmitPDF: (bibTexEntries: {
+        [id: string]: string
+    }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void,
+    onSubmitLatex: (bibTexEntries: {
         [id: string]: string
     }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void
 }) {
@@ -208,7 +211,7 @@ export function PDFInfoForm(props: {
                             return entry
                         }))
                         if (generate) {
-                            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
+                            props.onSubmitPDF(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
                         }
                     }}/>
                     <GenerateLatexButton style={{marginLeft: 40}} onClick={() => {
@@ -233,7 +236,7 @@ export function PDFInfoForm(props: {
                             return entry
                         }))
                         if (generate) {
-                            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
+                            props.onSubmitLatex(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
                         }
                     }}/>
                 </Card>

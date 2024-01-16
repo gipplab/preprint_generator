@@ -1,4 +1,6 @@
 import {latexSty} from "./LatexSty";
+import {latexMD} from "./LatexMD";
+import {generateLatexTex} from "./LatexTex";
 
 function downloadFileFromText(content: string, filename: string): void {
     const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
@@ -11,12 +13,12 @@ function downloadFileFromText(content: string, filename: string): void {
 }
 
 // Example usage
-export function downloadLatexFiles(): void {
+export function downloadLatexFiles(annotation: string, link: string, relatedPapers: string[]): void {
     const styText = latexSty
-    const texText = '...'; // Replace with your .tex file content
-    const mdText = '...';  // Replace with your .md file content
+    const texText = generateLatexTex(annotation, link, relatedPapers)
+    const mdText = latexMD
 
-    downloadFileFromText(styText, 'example.sty');
-    downloadFileFromText(texText, 'example.tex');
-    downloadFileFromText(mdText, 'example.md');
+    downloadFileFromText(styText, 'annotation.sty');
+    downloadFileFromText(texText, 'annotation.tex');
+    downloadFileFromText(mdText, 'instructions.md');
 }
