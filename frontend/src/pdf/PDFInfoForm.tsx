@@ -20,6 +20,7 @@ import {arxivid2doi, doi2bib, RelatedPaperInfo, relatedPaperToString} from "../a
 import {requestPreprints} from "../EnhancedPreprintGenerator";
 import {GenerateButton} from "../inputComponents/GenerateButton";
 import Card from "../card/Card";
+import {GenerateLatexButton} from "../latex/GenerateLatexButton";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -33,7 +34,10 @@ const Transition = React.forwardRef(function Transition(
 
 export function PDFInfoForm(props: {
     file: PDFFile,
-    onSubmit: (bibTexEntries: {
+    onSubmitPDF: (bibTexEntries: {
+        [id: string]: string
+    }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void,
+    onSubmitLatex: (bibTexEntries: {
         [id: string]: string
     }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void
 }) {
@@ -207,7 +211,32 @@ export function PDFInfoForm(props: {
                             return entry
                         }))
                         if (generate) {
-                            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
+                            props.onSubmitPDF(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
+                        }
+                    }}/>
+                    <GenerateLatexButton style={{marginLeft: 40}} onClick={() => {
+                        const bibTexEntries: { [id: string]: string } = {}
+                        bibTexEntries["artType"] = artType
+                        entries.forEach((entry) => {
+                            bibTexEntries[entry.tag] = entry.value
+                        })
+                        bibTexEntries["title"] = bibTexEntries["title"]
+                        bibTexEntries["year"] = "" + publishDate.getFullYear()
+                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
+                        let generate = true
+                        if (artType === "") {
+                            generate = false
+                            setArtTypeError(true)
+                        }
+                        setEntries(entries.map((entry) => {
+                            if (entry.value === "") {
+                                generate = false
+                                return {...entry, error: true}
+                            }
+                            return entry
+                        }))
+                        if (generate) {
+                            props.onSubmitLatex(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
                         }
                     }}/>
                 </Card>

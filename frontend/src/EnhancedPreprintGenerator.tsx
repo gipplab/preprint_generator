@@ -7,10 +7,11 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
-import {RelatedPaperInfo} from "./annotation/AnnotationAPI"
+import {RelatedPaperInfo, relatedPaperToString} from "./annotation/AnnotationAPI"
 import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
 import darkTheme from "./theme";
+import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
 
 const PDFJS = window.pdfjsLib;
 
@@ -153,35 +154,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         }
                         {this.state.file &&
                             <PDFInfoForm file={this.state.file}
-                                         onSubmit={async (bibTexEntries, keywords, similarPreprints: RelatedPaperInfo[]) => {
-                                             const fileBackup = await this.state.file!.file.copy()
-                                             const uuid = uuidv4()
-                                             const annotationText = await createBibTexAnnotation(
-                                                 this.state.file!.file,
-                                                 this.state.file!.name,
-                                                 uuid,
-                                                 bibTexEntries,
-                                                 similarPreprints
-                                             )
-                                             await this.storePreprint({
-                                                 title: bibTexEntries["title"],
-                                                 keywords: keywords,
-                                                 doi: bibTexEntries["doi"],
-                                                 author: bibTexEntries["author"],
-                                                 url: bibTexEntries["url"],
-                                                 year: bibTexEntries["year"],
-                                                 annotation: annotationText,
-                                                 file: this.state.file,
-                                                 uuid: uuid
-                                             })
-                                             this.setState({
-                                                 file: {
-                                                     file: fileBackup,
-                                                     info: this.state.file!.info,
-                                                     name: this.state.file!.name
-                                                 }
-                                             })
-                                         }}/>
+                                         onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints)}
+                                         onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints, true)}/>
                         }
                     </header>
                 </div>
@@ -189,6 +163,46 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         )
             ;
     }
+
+    private async OnGeneration(bibTexEntries: {
+        [p: string]: string
+    }, keywords: string[], similarPreprints: RelatedPaperInfo[], latex = false) {
+
+        const fileBackup = await this.state.file!.file.copy()
+        const uuid = uuidv4()
+        const annotationText = await createBibTexAnnotation(
+            this.state.file!.file,
+            this.state.file!.name,
+            uuid,
+            !latex,
+            bibTexEntries,
+            similarPreprints
+        )
+        if (latex) {
+            const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+            const url = `${baseUrl}/preprint/${uuid}`;
+            downloadLatexFiles(annotationText, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)))
+        }
+        await this.storePreprint({
+            title: bibTexEntries["title"],
+            keywords: keywords,
+            doi: bibTexEntries["doi"],
+            author: bibTexEntries["author"],
+            url: bibTexEntries["url"],
+            year: bibTexEntries["year"],
+            annotation: annotationText,
+            file: this.state.file,
+            uuid: uuid
+        })
+        this.setState({
+            file: {
+                file: fileBackup,
+                info: this.state.file!.info,
+                name: this.state.file!.name
+            }
+        })
+    };
+
 }
 
 
