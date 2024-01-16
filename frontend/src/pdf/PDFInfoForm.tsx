@@ -20,6 +20,7 @@ import {arxivid2doi, doi2bib, RelatedPaperInfo, relatedPaperToString} from "../a
 import {requestPreprints} from "../EnhancedPreprintGenerator";
 import {GenerateButton} from "../inputComponents/GenerateButton";
 import Card from "../card/Card";
+import {GenerateLatexButton} from "../latex/GenerateLatexButton";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -186,6 +187,31 @@ export function PDFInfoForm(props: {
             <div style={{marginBottom: 40}}>
                 <Card title="4. Check all Information">
                     <GenerateButton onClick={() => {
+                        const bibTexEntries: { [id: string]: string } = {}
+                        bibTexEntries["artType"] = artType
+                        entries.forEach((entry) => {
+                            bibTexEntries[entry.tag] = entry.value
+                        })
+                        bibTexEntries["title"] = bibTexEntries["title"]
+                        bibTexEntries["year"] = "" + publishDate.getFullYear()
+                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
+                        let generate = true
+                        if (artType === "") {
+                            generate = false
+                            setArtTypeError(true)
+                        }
+                        setEntries(entries.map((entry) => {
+                            if (entry.value === "") {
+                                generate = false
+                                return {...entry, error: true}
+                            }
+                            return entry
+                        }))
+                        if (generate) {
+                            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
+                        }
+                    }}/>
+                    <GenerateLatexButton style={{marginLeft: 40}} onClick={() => {
                         const bibTexEntries: { [id: string]: string } = {}
                         bibTexEntries["artType"] = artType
                         entries.forEach((entry) => {
