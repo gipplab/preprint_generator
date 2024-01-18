@@ -23,16 +23,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // CORS setup for multiple domains
-const allowedDomains = config.cors_urls;
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedDomains.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
+var corsOptions = {
+origin: config.cors_urls,
+optionsSuccessStatus: 200 // For legacy browser support
+}
+
+app.use(cors(corsOptions));
 
 app.use(logger('dev'));
 app.use(express.json());
