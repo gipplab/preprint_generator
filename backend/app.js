@@ -22,16 +22,18 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// CORS setup for multiple domains
 const allowedDomains = config.cors_urls;
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedDomains.indexOf(origin) !== -1) {
+    if (!origin || allowedDomains.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   }
 }));
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
