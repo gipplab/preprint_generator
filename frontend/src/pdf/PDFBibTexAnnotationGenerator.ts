@@ -73,17 +73,28 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
 
-    let similarPreprintsText = ""
+    let currentY = relatedPapersStartY + 50; // Initial Y position for the first related paper
+    const lineHeight = 10; // Adjust based on your font size and line spacing
+
     similarPreprints.forEach((preprint, index) => {
-        similarPreprintsText += `${index + 1}) ${relatedPaperToString(preprint)}\n\n`
-    })
+        const preprintText = `${index + 1}) ${relatedPaperToString(preprint)}\n\n`;
+        const lines = pdf.splitTextToSize(preprintText, pageWidth - 2 * leftMargin);
+        const blockHeight = lines.length * lineHeight;
 
-    const linesRelatedPapers = pdf.splitTextToSize(similarPreprintsText, pageWidth - 2 * leftMargin);
+        // Print the text without making it a link
+        pdf.text(lines, leftMargin, currentY);
 
-    pdf.text(linesRelatedPapers, leftMargin, relatedPapersStartY + 50);
+        // Overlay a transparent link rectangle over the text block
+        // Note: The link rectangle coordinates are (x, y, width, height)
+        pdf.link(leftMargin, currentY - lineHeight * 0.8, pageWidth - 2 * leftMargin, blockHeight, {url: preprint.url});
+
+        // Update currentY to the next block position, adding extra space between entries if needed
+        currentY += blockHeight + lineHeight; // Adjust spacing as needed
+    });
 
     // Output as array buffer to merge with the existing PDF
-    return {pdf: pdf.output('arraybuffer'), text: bibAnnotationText}
+    return {pdf: pdf.output('arraybuffer'), text: bibAnnotationText};
+
 }
 
 

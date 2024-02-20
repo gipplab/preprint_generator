@@ -29,7 +29,7 @@ export function parsePDF(file: PDFDocument, text: { firstPage: any; text: string
     let artType = "article"
     let author = file.getAuthor()
     let title = text.firstPage.items.filter((item: { height: number }) => {
-        return item.height == maxHeight
+        return item.height === maxHeight
     }).map((item: any) => {
         return item.str
     }).join("").trim().replace(/\s+/g, " ") || file.getTitle() || name.substring(0, name.length - 4).replace(/\s+/g, " ")

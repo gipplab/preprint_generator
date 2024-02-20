@@ -57,5 +57,8 @@
     "@types/uuid": "^9.0.7",
     "eslint": "^8.56.0",
     "eslint-config-react-app": "^7.0.1"
+  },
+  "overrides": {
+    "typescript": "^5.3.3"
   }
 }

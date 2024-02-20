@@ -178,9 +178,9 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             bibTexEntries,
             similarPreprints
         )
+        const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+        const url = `${baseUrl}/preprint/${uuid}`;
         if (latex) {
-            const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-            const url = `${baseUrl}/preprint/${uuid}`;
             downloadLatexFiles(annotationText, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)))
         }
         await this.storePreprint({
@@ -188,7 +188,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             keywords: keywords,
             doi: bibTexEntries["doi"],
             author: bibTexEntries["author"],
-            url: bibTexEntries["url"],
+            url: bibTexEntries["url"] || url,
             year: bibTexEntries["year"],
             annotation: annotationText,
             file: this.state.file,
