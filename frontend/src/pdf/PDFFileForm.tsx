@@ -6,6 +6,8 @@ import {EntryFieldGenerator} from "../inputComponents/EntryFieldGenerator";
 import {EntryInputField} from "../inputComponents/EntryInputField";
 import {PublishDateSelector} from "../inputComponents/PublishDateSelector";
 import {ArticleTypeSelect} from "../inputComponents/ArticleTypeSelect";
+import BibTexEntryDialog from "../annotation/AnnotationParserButton";
+import {Bibliography} from "@retorquere/bibtex-parser";
 
 interface PDFFileFormInterface {
     info: PDFInfo
@@ -28,8 +30,12 @@ export interface BibTexEntry {
     type?: string
 }
 
+type BibTexEntries = {
+    [key: string]: BibTexEntry;
+};
+
 export function PDFFileForm(props: PDFFileFormInterface) {
-    const bibTexEntries = {
+    const bibTexEntries: BibTexEntries = {
         ref: {name: "Reference", tag: "ref", default: true, value: props.info.artTitle},
         title: {name: "Title", tag: "title", default: true, value: props.info.title},
         author: {name: "Author (seperated by comma)", tag: "author", default: true, value: props.info.author || ""},
@@ -68,6 +74,44 @@ export function PDFFileForm(props: PDFFileFormInterface) {
     const [suggestions, setSuggestions] = useState<BibTexEntry[]>([])
 
     let [newField, setNewField] = useState("")
+
+    const [isBibTexDialogOpen, setIsBibTexDialogOpen] = useState(false);
+
+    const handleBibTexDialogClose = () => {
+        setIsBibTexDialogOpen(false);
+    };
+
+    const handleAddBibTexEntry = (newEntries: BibTexEntry[]) => {
+        props.setArtType(newEntries.find((entry) => {
+            return (entry.tag === "type" && !entry.default)
+        })?.value || "")
+
+        const month = newEntries.find((entry) => {
+            return (entry.tag === "month")
+        })?.value || ""
+        const year = newEntries.find((entry) => {
+            return (entry.tag === "year")
+        })?.value || ""
+
+        newEntries = newEntries.filter((entry) => {
+            return (["type", "year", "month"].indexOf(entry.tag) === -1)
+        })
+
+        props.setPublishDate(new Date(`${month}/01/${year}`))
+
+        newEntries.map((entry) => {
+            const simEntry = Object.entries(bibTexEntries).find(([key, value]) => {
+                return entry.tag === key
+            })
+            if (simEntry) {
+                return {type: simEntry[1].type || "", ...entry}
+            } else {
+                return entry
+            }
+        })
+
+        props.setEntries(newEntries);
+    };
 
     function addField(field: string) {
         let newEntry: BibTexEntry
@@ -142,25 +186,39 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                         </Grid>
                     ))
                 }
+
             </Grid>
             <br/>
-            <div style={{display: "flex", alignItems: "center"}}>
-                <EntryFieldGenerator value={newField} onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                        handleSubmit()
-                    }
-                }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
-                <div style={{display: 'flex', flexWrap: 'wrap', paddingBottom: "20px"}}>
-                    {suggestions.map((suggestion) =>
-                        (<Chip onClick={() => {
-                                props.setEntries([...props.entries, suggestion])
-                                setSuggestions(Object.values(bibTexEntries).filter((entry) => [...props.entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
-                                    return {...entry, default: false}
-                                }))
-                            }
-                            } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion.tag}
-                               label={suggestion.tag}/>
-                        ))}
+            <div style={{display: "flex"}}>
+                <Button style={{marginRight: 20, marginBottom: 24}} variant="contained"
+                        onClick={() => setIsBibTexDialogOpen(true)}>
+                    Parse from BibTex
+                </Button>
+                <div style={{display: "flex", alignItems: "center"}}>
+                    <EntryFieldGenerator value={newField} onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handleSubmit()
+                        }
+                    }} onChange={(e) => setNewField(e.target.value)} onClick={handleSubmit}/>
+                    <div style={{display: 'flex', flexWrap: 'wrap', paddingBottom: "20px"}}>
+                        {suggestions.map((suggestion) =>
+                            (<Chip onClick={() => {
+                                    props.setEntries([...props.entries, suggestion])
+                                    setSuggestions(Object.values(bibTexEntries).filter((entry) => [...props.entries, suggestion].map((entry) => entry.tag).indexOf(entry.tag) === -1).map((entry) => {
+                                        return {...entry, default: false}
+                                    }))
+                                }
+                                } style={{marginLeft: "5px", marginBottom: "5px"}} key={suggestion.tag}
+                                   label={suggestion.tag}/>
+                            ))}
+                    </div>
+
+                    <BibTexEntryDialog
+                        open={isBibTexDialogOpen}
+                        onClose={handleBibTexDialogClose}
+                        onParseBibtex={handleAddBibTexEntry}
+                    />
+
                 </div>
             </div>
         </div>

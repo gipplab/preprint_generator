@@ -22,7 +22,14 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(cors({origin: config.cors_url}));
+// CORS setup for multiple domains
+var corsOptions = {
+origin: config.cors_url,
+optionsSuccessStatus: 200 // For legacy browser support
+}
+
+app.use(cors(corsOptions));
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
