@@ -178,7 +178,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             bibTexEntries,
             similarPreprints
         )
-        const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+        const baseUrl = `${window.location.protocol}//${window.location.hostname}${(window.location.port) ? ":" : ""}${window.location.port}`;
         const url = `${baseUrl}/preprint/${uuid}`;
         if (latex) {
             downloadLatexFiles(annotationText, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)))
