@@ -86,7 +86,9 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
 
         // Overlay a transparent link rectangle over the text block
         // Note: The link rectangle coordinates are (x, y, width, height)
-        pdf.link(leftMargin, currentY - lineHeight * 0.8, pageWidth - 2 * leftMargin, blockHeight, {url: preprint.url});
+        if (preprint.url) {
+            pdf.link(leftMargin, currentY - lineHeight * 0.8, pageWidth - 2 * leftMargin, blockHeight, {url: preprint.url});
+        }
 
         // Update currentY to the next block position, adding extra space between entries if needed
         currentY += blockHeight + lineHeight; // Adjust spacing as needed
