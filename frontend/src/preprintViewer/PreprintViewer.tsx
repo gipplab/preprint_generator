@@ -8,6 +8,8 @@ import {EnhancedPreprintGeneratorAppBar} from "../EnhancedPreprintGeneratorAppBa
 import {ThemeProvider} from "@mui/material/styles";
 import darkTheme from "../theme"; // Assuming this CSS file has your styling
 
+const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
+
 interface Preprint {
     title: string;
     author: string;
@@ -27,7 +29,7 @@ const PreprintViewer = () => {
     };
 
     useEffect(() => {
-        fetch(`${config.backend_url}/preprint/info/${title}`)
+        fetch(`${backendURL}/preprint/info/${title}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -82,7 +84,7 @@ const PreprintViewer = () => {
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                         <iframe
-                                            src={`${config.backend_url}/preprint/${title}`}
+                                            src={`${backendURL}/preprint/${title}`}
                                             width="100%"
                                             height={isMobile ? "300px" : "600px"}
                                             style={{border: 'none'}}

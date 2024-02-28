@@ -13,6 +13,8 @@ import config from "./config.json"
 import darkTheme from "./theme";
 import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
 
+const backendURL = process.env.REACT_APP_BACKEND_URL  || config.backend_url;
+
 const PDFJS = window.pdfjsLib;
 
 interface AppProps {
@@ -61,7 +63,7 @@ async function getPDFText(base64File: string) {
 export async function requestPreprints(title: string, keywords: string[]) {
     let response
     try {
-        response = await fetch(`${config.backend_url}/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
+        response = await fetch(`${backendURL}/database/getRelatedPreprints?keywords=${JSON.stringify(keywords)}`)
     } catch (e) {
         return undefined
     }
@@ -79,7 +81,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     }
 
     callAPI() {
-        fetch(`${config.backend_url}/testAPI`)
+        fetch(`${backendURL}/testAPI`)
             .then(res => res.text())
             .then(_ => this.setState({apiConnected: true})).catch(() => {
             this.setState({apiConnected: false})
@@ -107,7 +109,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             file: file_base64, // Base64 encoded file
         };
 
-        fetch(`${config.backend_url}/database/storePreprint`, {
+        fetch(`${backendURL}/database/storePreprint`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

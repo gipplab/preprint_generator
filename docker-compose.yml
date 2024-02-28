@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: preprint_db
+      POSTGRES_USER: preprint
+      POSTGRES_PASSWORD: preprint
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    command: ["npm", "start"]
+    environment:
+      - DATABASE_USER=preprint
+      - DATABASE_PASSWORD=preprint
+      - DATABASE_HOST=db
+      - DATABASE_NAME=preprint_db
+      - DATABASE_PORT=5432
+      - CORS_URL=http://localhost:3000
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:9000
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  grobid:
+    image: lfoppiano/grobid:0.7.0
+    ports:
+      - "8070:8070"
+      - "8071:8071"
+
+volumes:
+  postgres_data:

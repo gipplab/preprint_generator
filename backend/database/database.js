@@ -19,11 +19,11 @@ function lemmatizeKeywords(keywords) {
 }
 
 const pool = new Pool({
-    user: credentials.database_user,
-    host: credentials.database_host,
-    database: credentials.database_name,
-    password: credentials.database_password,
-    port: credentials.database_port,
+    user: process.env.DATABASE_USER || credentials.database_user,
+    host: process.env.DATABASE_HOST || credentials.database_host,
+    database: process.env.DATABASE_NAME || credentials.database_name,
+    password: process.env.DATABASE_PASSWORD || credentials.database_password,
+    port: process.env.DATABASE_PORT || credentials.database_port,
 })
 
 const createTableQuery = `
