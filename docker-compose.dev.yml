@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: preprint_db_dev
+      POSTGRES_USER: preprint_dev
+      POSTGRES_PASSWORD: preprint_dev
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev # Assuming you have a Dockerfile.dev with development-specific settings
+    volumes:
+      - ./backend:/app # For live-reloading
+      - /app/node_modules
+    environment:
+      - DATABASE_USER=preprint_dev
+      - DATABASE_PASSWORD=preprint_dev
+      - DATABASE_HOST=db
+      - DATABASE_NAME=preprint_db_dev
+      - DATABASE_PORT=5432
+      - CORS_URL=http://localhost:3000
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev # Assuming a Dockerfile.dev with development-specific settings
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:9000
+    volumes:
+      - ./frontend:/app # For live-reloading
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  grobid:
+    image: lfoppiano/grobid:0.7.0
+    ports:
+      - "8070:8070"
+      - "8071:8071"
