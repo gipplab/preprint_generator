@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'  # This will trigger the workflow for any tag push
+
 jobs:
   build_and_push_docker_image:
     runs-on: ubuntu-latest
@@ -23,11 +26,15 @@ jobs:
         with:
           context: frontend/.
           push: true
-          tags: ghcr.io/${{ github.repository }}/frontend:latest
+          tags: |
+            ghcr.io/${{ github.repository }}/frontend:latest
+            ghcr.io/${{ github.repository }}/frontend:${GITHUB_REF_NAME}
 
       - name: Build and push backend
         uses: docker/build-push-action@v2
         with:
           context: backend/.
           push: true
-          tags: ghcr.io/${{ github.repository }}/backend:latest
+          tags: |
+            ghcr.io/${{ github.repository }}/backend:latest
+            ghcr.io/${{ github.repository }}/backend:${GITHUB_REF_NAME}
