@@ -25,7 +25,7 @@ app.set('view engine', 'jade');
 
 // CORS setup for multiple domains
 const corsOptions = {
-    origin: process.env.CORS_URL || config.cors_url,
+    origin: JSON.parse(process.env.CORS_URL) || config.cors_url,
     optionsSuccessStatus: 200 // For legacy browser support
 };
 
