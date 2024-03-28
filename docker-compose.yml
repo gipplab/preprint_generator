@@ -36,10 +36,7 @@ services:
       - backend
 
   grobid:
-    image: lfoppiano/grobid:0.7.0
-    ports:
-      - "8070:8070"
-      - "8071:8071"
+    image: lfoppiano/grobid:0.8.0
 
 volumes:
   postgres_data:

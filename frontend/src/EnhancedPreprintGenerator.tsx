@@ -12,8 +12,9 @@ import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
 import darkTheme from "./theme";
 import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
+import {CircularProgress} from "@mui/material";
 
-const backendURL = process.env.REACT_APP_BACKEND_URL  || config.backend_url;
+const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
 const PDFJS = window.pdfjsLib;
 
@@ -23,6 +24,7 @@ interface AppProps {
 interface AppState {
     apiConnected?: boolean;
     file?: PDFFile;
+    loading: boolean;
 }
 
 
@@ -77,7 +79,7 @@ export async function requestPreprints(title: string, keywords: string[]) {
 class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
-        this.state = {apiConnected: false};
+        this.state = {apiConnected: false, loading: false};
     }
 
     callAPI() {
@@ -138,23 +140,28 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         }}
                     />
                     <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
-                        {!this.state.file &&
-                            <PDFFileUploader handleChange={async (file: any) => {
+                        {(!this.state.file && !this.state.loading) &&
+                            <PDFFileUploader handleChange={async (file: File) => {
+                                this.setState({loading: true})
                                 let base64File = await toBase64(file)
                                 let pdfDoc = await PDFDocument.load(base64File)
                                 const pdfText = await getPDFText(base64File);
+                                const info = await parsePDF(file, pdfDoc, pdfText, file.name)
                                 let pdfFile: PDFFile = {
                                     name: file.name,
                                     file: pdfDoc,
-                                    info: parsePDF(pdfDoc, pdfText, file.name)
+                                    info: info
                                 }
                                 this.setState({
-                                    file: pdfFile
+                                    file: pdfFile,
+                                    loading: false
                                 })
-
                             }}/>
                         }
-                        {this.state.file &&
+                        {this.state.loading &&
+                            <CircularProgress/>
+                        }
+                        {(this.state.file && !this.state.loading) &&
                             <PDFInfoForm file={this.state.file}
                                          onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints)}
                                          onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints, true)}/>
