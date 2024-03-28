@@ -19,9 +19,11 @@ services:
       - DATABASE_HOST=db
       - DATABASE_NAME=preprint_db
       - DATABASE_PORT=5432
-      - CORS_URL=http://localhost:3000
+      - CORS_URL=["http://localhost:3000"]
     ports:
       - "9000:9000"
+    volumes:
+      - pdfs:/usr/src/app/uploads
     depends_on:
       - db
 
@@ -40,3 +42,4 @@ services:
 
 volumes:
   postgres_data:
+  pdfs:

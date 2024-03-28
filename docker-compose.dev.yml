@@ -21,7 +21,7 @@ services:
       - DATABASE_HOST=db
       - DATABASE_NAME=preprint_db_dev
       - DATABASE_PORT=5432
-      - CORS_URL=http://localhost:3000
+      - CORS_URL=["http://localhost:3000"]
     ports:
       - "9000:9000"
     depends_on:

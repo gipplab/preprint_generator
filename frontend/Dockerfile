@@ -24,6 +24,17 @@ FROM nginx:alpine
 # Copy the build output to replace the default nginx contents.
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Overwrite the default Nginx config
+RUN printf 'server {\n\
+    listen 80;\n\
+    server_name preprint.larskaesberg.de;\n\
+    root /usr/share/nginx/html;\n\
+    index index.html;\n\
+    location / {\n\
+        try_files $uri $uri/ /index.html;\n\
+    }\n\
+}' > /etc/nginx/conf.d/default.conf
+
 # Expose port 80 to the Docker host, so we can access it 
 # from the outside.
 EXPOSE 80
