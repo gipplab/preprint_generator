@@ -83,7 +83,7 @@ async function analyzeWithBackend(file: File) {
         const authors: string[] = [];
         authorObject?.forEach((author: any) => {
             if (author.persName) {
-                authors.push(`${author.persName[0].forename[0]._} ${author.persName[0].surname[0]}`)
+                authors.push(`${author.persName?.[0]?.forename?.[0]?._} ${author.persName?.[0]?.surname?.[0]}`)
             }
         })
         const keywords: string[] | undefined = data?.TEI?.teiHeader?.[0]?.profileDesc?.[0]?.textClass?.[0]?.keywords?.[0]?.term
