@@ -176,7 +176,12 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     private async OnGeneration(bibTexEntries: {
         [p: string]: string
     }, keywords: string[], similarPreprints: RelatedPaperInfo[], latex = false) {
-
+        // Fix for error in the PDF-LIB library
+        try {
+            this.state.file!.file.getCreationDate()
+        } catch (e) {
+            this.state.file!.file.setCreationDate(new Date())
+        }
         const fileBackup = await this.state.file!.file.copy()
         const uuid = uuidv4()
         const annotationText = await createBibTexAnnotation(
