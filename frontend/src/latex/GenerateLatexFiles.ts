@@ -13,9 +13,9 @@ function downloadFileFromText(content: string, filename: string): void {
 }
 
 // Example usage
-export function downloadLatexFiles(annotation: string, link: string, relatedPapers: string[]): void {
+export function downloadLatexFiles(annotation: string, link: string, relatedPapers: string[], onlineLink: boolean = true): void {
     const styText = latexSty
-    const texText = generateLatexTex(annotation, link, relatedPapers)
+    const texText = generateLatexTex(annotation, link, relatedPapers, onlineLink)
     const mdText = latexMD
 
     downloadFileFromText(styText, 'annotation.sty');

@@ -1,26 +1,19 @@
 import {PDFDocument, PDFName} from 'pdf-lib';
 import {jsPDF} from 'jspdf';
 import {RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
-
-function saveByteArray(reportName: string, byte: Uint8Array) {
-    const blob = new Blob([byte], {type: "application/pdf"});
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = reportName;
-    link.click();
-}
+import unidecode from "unidecode";
 
 
 function createCitationPDF(uuid: string, size: { width: number, height: number }, bibTexEntries: {
     [id: string]: string
-}, similarPreprints?: RelatedPaperInfo[]): { pdf: ArrayBuffer, text: string } {
+}, similarPreprints?: RelatedPaperInfo[], onlineLink: boolean = false): { pdf: ArrayBuffer, text: string } {
     const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
         format: [size.width, size.height]
     });
     const leftMargin = 50;
-    const topMargin = 50;
+    var topMargin = 50;
     const pageWidth = pdf.internal.pageSize.getWidth();
 
     // Header Title
@@ -34,10 +27,13 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     pdf.setFont('helvetica', 'normal');
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
     const url = `${baseUrl}/preprint/${uuid}`;
-    pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin + 30, {url: url});
+    if (onlineLink) {
+        topMargin += 30
+        pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: url});
+    }
 
     // Citation Box
-    const citationStartY = topMargin + 50;
+    const citationStartY = topMargin + 20;
     const citationBoxPadding = 40;
     pdf.setFont('courier', 'normal');
     pdf.setTextColor("#000000")
@@ -54,12 +50,14 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     }
     bibAnnotationText += "\n}"
 
-    const linesBibtex = pdf.splitTextToSize(bibAnnotationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
-    const citationBoxHeight = linesBibtex.length * 12 * 1.1 + 2 * citationBoxPadding;
+    const linesBibtex: string[] = pdf.splitTextToSize(bibAnnotationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
+    const filteredLinesBibtex = linesBibtex.map(s => unidecode(s))
+
+    const citationBoxHeight = filteredLinesBibtex.length * 12 * 1.1 + 2 * citationBoxPadding;
 
     const cornerRadius = 20; // Radius of the rounded corners
     pdf.roundedRect(leftMargin, citationStartY, pageWidth - 2 * leftMargin, citationBoxHeight, cornerRadius, cornerRadius);
-    pdf.text(linesBibtex, leftMargin + citationBoxPadding, citationStartY + citationBoxPadding); // Adjust as per line height
+    pdf.text(filteredLinesBibtex, leftMargin + citationBoxPadding, citationStartY + citationBoxPadding); // Adjust as per line height
 
     if (!similarPreprints || similarPreprints.length === 0) {
         return {pdf: pdf.output('arraybuffer'), text: bibAnnotationText}
@@ -78,11 +76,13 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
 
     similarPreprints.forEach((preprint, index) => {
         const preprintText = `${index + 1}) ${relatedPaperToString(preprint)}\n\n`;
-        const lines = pdf.splitTextToSize(preprintText, pageWidth - 2 * leftMargin);
-        const blockHeight = lines.length * lineHeight;
+        const lines: string[] = pdf.splitTextToSize(preprintText, pageWidth - 2 * leftMargin);
+
+        const filteredLines = lines.map(s => unidecode(s))
+        const blockHeight = filteredLines.length * lineHeight;
 
         // Print the text without making it a link
-        pdf.text(lines, leftMargin, currentY);
+        pdf.text(filteredLines, leftMargin, currentY);
 
         // Overlay a transparent link rectangle over the text block
         // Note: The link rectangle coordinates are (x, y, width, height)
@@ -150,23 +150,18 @@ async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuf
 }
 
 
-export async function createBibTexAnnotation(file: PDFDocument, name: string, uuid: string, download: boolean, bibTexEntries: {
+export async function createBibTexAnnotation(file: PDFDocument, uuid: string, bibTexEntries: {
     [id: string]: string
-}, similarPreprints?: any[]): Promise<string> {
+}, similarPreprints?: any[], onlineLink: boolean = true): Promise<{ text: string; bytes: Uint8Array; }> {
 
     // Create a PDF from the HTML content
-    const citation = createCitationPDF(uuid, file.getPage(0).getSize(), bibTexEntries, similarPreprints);
+    const citation = createCitationPDF(uuid, file.getPage(0).getSize(), bibTexEntries, similarPreprints, onlineLink);
     const bibTexText = citation.text
     const bibTexBytes = citation.pdf
 
     // Merge the new citation PDF with the original PDF
     let pdfBytes = await mergePDFs(file, bibTexBytes);
 
-    // Save the merged PDF
-    if (download) {
-        saveByteArray(name, await pdfBytes.save());
-    }
-
     // Return the annotation text (or modify as per your requirement)
-    return bibTexText;
+    return {text: bibTexText, bytes: await pdfBytes.save()};
 }

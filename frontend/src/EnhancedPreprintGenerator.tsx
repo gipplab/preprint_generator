@@ -12,7 +12,15 @@ import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
 import darkTheme from "./theme";
 import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
-import {CircularProgress} from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle
+} from "@mui/material";
 
 const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
@@ -25,6 +33,11 @@ interface AppState {
     apiConnected?: boolean;
     file?: PDFFile;
     loading: boolean;
+    latex: boolean;
+    uploadDialog: boolean;
+    bibTexEntries: { [p: string]: string };
+    keywords: string[];
+    similarPreprints: RelatedPaperInfo[];
 }
 
 
@@ -62,6 +75,14 @@ async function getPDFText(base64File: string) {
     return {firstPage: firstPage, text}
 }
 
+function saveByteArray(reportName: string, byte: Uint8Array) {
+    const blob = new Blob([byte], {type: "application/pdf"});
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = reportName;
+    link.click();
+}
+
 export async function requestPreprints(title: string, keywords: string[]) {
     let response
     try {
@@ -79,7 +100,15 @@ export async function requestPreprints(title: string, keywords: string[]) {
 class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
-        this.state = {apiConnected: false, loading: false};
+        this.state = {
+            apiConnected: false,
+            loading: false,
+            latex: false,
+            uploadDialog: false,
+            bibTexEntries: {},
+            keywords: [],
+            similarPreprints: []
+        };
     }
 
     callAPI() {
@@ -136,7 +165,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                     <EnhancedPreprintGeneratorAppBar
                         file={this.state.file} apiConnected={this.state.apiConnected}
                         onClick={() => {
-                            this.setState({file: undefined})
+                            this.setState({file: undefined, uploadDialog: false})
                         }}
                     />
                     <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
@@ -163,9 +192,54 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         }
                         {(this.state.file && !this.state.loading) &&
                             <PDFInfoForm file={this.state.file}
-                                         onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints)}
-                                         onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.OnGeneration(bibTexEntries, keywords, similarPreprints, true)}/>
+                                         onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.setState({
+                                             bibTexEntries,
+                                             keywords,
+                                             similarPreprints,
+                                             latex: false,
+                                             uploadDialog: true
+                                         })}
+                                         onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.setState({
+                                             bibTexEntries,
+                                             keywords,
+                                             similarPreprints,
+                                             latex: true,
+                                             uploadDialog: true
+                                         })}/>
                         }
+                        <Dialog
+                            open={this.state.uploadDialog}
+                            onClose={() => this.setState({uploadDialog: false})}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                        >
+                            <DialogTitle id="alert-dialog-title">
+                                {"Upload Preprint to Online Repository?"}
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id="alert-dialog-description">
+                                    Would you like to upload your preprint to our online repository? Uploading allows
+                                    your document to be accessible online and suggested as related literature to others.
+                                    If you choose not to upload, the document will not be available online or suggested
+                                    to other users.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={async () => {
+                                        this.setState({uploadDialog: false})
+                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, true)
+                                    }}
+                                    autoFocus>
+                                    Agree
+                                </Button>
+                                <Button
+                                    onClick={async () => {
+                                        this.setState({uploadDialog: false})
+                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, false)
+                                    }}>Disagree</Button>
+                            </DialogActions>
+                        </Dialog>
                     </header>
                 </div>
             </ThemeProvider>
@@ -175,7 +249,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     private async OnGeneration(bibTexEntries: {
         [p: string]: string
-    }, keywords: string[], similarPreprints: RelatedPaperInfo[], latex = false) {
+    }, keywords: string[], similarPreprints: RelatedPaperInfo[], latex = false, upload = false) {
         // Fix for error in the PDF-LIB library
         try {
             this.state.file!.file.getCreationDate()
@@ -184,35 +258,38 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
         }
         const fileBackup = await this.state.file!.file.copy()
         const uuid = uuidv4()
-        const annotationText = await createBibTexAnnotation(
+        const {text, bytes} = await createBibTexAnnotation(
             this.state.file!.file,
-            this.state.file!.name,
             uuid,
-            !latex,
             bibTexEntries,
-            similarPreprints
+            similarPreprints,
+            upload
         )
         const baseUrl = `${window.location.protocol}//${window.location.hostname}${(window.location.port) ? ":" : ""}${window.location.port}`;
         const url = `${baseUrl}/preprint/${uuid}`;
-        if (latex) {
-            downloadLatexFiles(annotationText, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)))
+        if (upload) {
+            await this.storePreprint({
+                title: bibTexEntries["title"],
+                keywords: keywords,
+                doi: bibTexEntries["doi"],
+                author: bibTexEntries["author"],
+                url: bibTexEntries["url"] || url,
+                year: bibTexEntries["year"],
+                annotation: text,
+                file: this.state.file,
+                uuid: uuid
+            })
         }
-        await this.storePreprint({
-            title: bibTexEntries["title"],
-            keywords: keywords,
-            doi: bibTexEntries["doi"],
-            author: bibTexEntries["author"],
-            url: bibTexEntries["url"] || url,
-            year: bibTexEntries["year"],
-            annotation: annotationText,
-            file: this.state.file,
-            uuid: uuid
-        })
+        if (latex) {
+            downloadLatexFiles(text, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)), upload)
+        } else {
+            saveByteArray(this.state.file!.name, bytes);
+        }
         this.setState({
             file: {
                 file: fileBackup,
                 info: this.state.file!.info,
-                name: this.state.file!.name
+                name: this.state.file!.name,
             }
         })
     };
