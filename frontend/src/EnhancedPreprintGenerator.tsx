@@ -21,6 +21,7 @@ import {
     DialogContentText,
     DialogTitle
 } from "@mui/material";
+import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/Card";
 
 const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
@@ -160,15 +161,12 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     render() {
         return (
-            <ThemeProvider theme={darkTheme}>
-                <div className="App">
-                    <EnhancedPreprintGeneratorAppBar
-                        file={this.state.file} apiConnected={this.state.apiConnected}
-                        onClick={() => {
-                            this.setState({file: undefined, uploadDialog: false})
-                        }}
-                    />
-                    <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
+            <Card className="w-full max-w-5xl mx-auto bg-slate-50">
+                <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-center text-slate-800">BibTeX Citation
+                        Generator</CardTitle>
+                </CardHeader>
+                <CardContent>
                         {(!this.state.file && !this.state.loading) &&
                             <PDFFileUploader handleChange={async (file: File) => {
                                 this.setState({loading: true})
@@ -240,11 +238,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                     }}>Disagree</Button>
                             </DialogActions>
                         </Dialog>
-                    </header>
-                </div>
-            </ThemeProvider>
-        )
-            ;
+                </CardContent>
+            </Card>)
     }
 
     private async OnGeneration(bibTexEntries: {

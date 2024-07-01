@@ -66,23 +66,27 @@ export const latexSty = "% annotations.sty file\n" +
     "\n" +
     "% Define the BibTeX Annotation environment using tcolorbox\n" +
     "\\newtcblisting{bibtexannotation}{\n" +
-    "    arc=3mm, % Adjust corner radius here\n" +
+    "    enhanced,\n" +
+    "    arc=3mm,\n" +
     "    top=0mm,\n" +
     "    bottom=0mm,\n" +
     "    left=5mm,\n" +
     "    right=5mm,\n" +
     "    boxrule=0.5pt,\n" +
-    "    colback=white, % Background color of the box\n" +
-    "    colframe=black, % Frame color\n" +
+    "    colback=white,\n" +
+    "    colframe=black,\n" +
+    "    listing engine=listings,\n" +
     "    listing only,\n" +
     "    listing options={\n" +
     "        basicstyle=\\ttfamily\\footnotesize,\n" +
     "        breaklines=true,\n" +
     "        breakindent=0pt,\n" +
-    "        breakautoindent=false,\n" +
-    "        frame=single,\n" +
+    "        breakatwhitespace=false,\n" +
+    "        columns=flexible,\n" +
+    "        keepspaces=true,\n" +
+    "        showstringspaces=false,\n" +
+    "        frame=none,\n" +
     "        framesep=10pt,\n" +
-    "        framerule=0pt,\n" +
     "        xleftmargin=10pt,\n" +
     "        xrightmargin=10pt,\n" +
     "        aboveskip=20pt,\n" +
