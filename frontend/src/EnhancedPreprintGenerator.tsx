@@ -14,9 +14,10 @@ import {
     Button,
     CircularProgress
 } from "@mui/material";
-import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/Card";
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "./components/ui/Card";
 import {RefreshCw, Wifi, WifiOff} from "lucide-react";
 import {Alert, AlertDescription} from "./components/ui/Alert";
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
@@ -159,7 +160,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             <div className="h-screen flex items-center justify-center">
                 <Card className="w-full max-w-5xl mx-auto bg-white shadow-xl border border-indigo-100">
                     <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-lg">
-                        <CardTitle className="font-bold text-center text-white text-2xl">CiteAssist</CardTitle>
+                        <CardTitle className="font-bold text-center text-white text-3xl">CiteAssist</CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
                         <div className="flex justify-between items-center mb-6">
@@ -169,6 +170,10 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                 <RefreshCw size={16}/>
                                 RESET
                             </Button>
+                            {
+                                this.state.file && <div>{this.state.file.name}</div>
+                            }
+
                             <div
                                 className={`flex items-center gap-2 ${this.state.apiConnected ? 'text-green-500' : 'text-red-500'}`}>
                                 {this.state.apiConnected ? <Wifi size={16}/> : <WifiOff size={16}/>}
@@ -233,6 +238,20 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                             </Alert>
                         )}
                     </CardContent>
+                    <CardFooter className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-200">
+                        <div className="w-full flex justify-between items-center text-sm text-gray-600">
+                            <span>© 2024 GippLab</span>
+                            <a
+                                href="https://github.com/gipplab/preprint_generator"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+                            >
+                                <GitHubIcon />
+                                View on GitHub
+                            </a>
+                        </div>
+                    </CardFooter>
                 </Card>
             </div>
         );
