@@ -1,27 +1,22 @@
 import React, {Component} from 'react';
 import './EnhancedPreprintGenerator.css';
+import './styles/globals.css';
 import {PDFDocument} from 'pdf-lib'
 import {parsePDF, PDFFile} from "./pdf/PDFParser";
 import {createBibTexAnnotation} from "./pdf/PDFBibTexAnnotationGenerator";
-import {createTheme, ThemeProvider} from '@mui/material/styles';
-import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {RelatedPaperInfo, relatedPaperToString} from "./annotation/AnnotationAPI"
 import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
-import darkTheme from "./theme";
 import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
 import {
     Button,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle
+    CircularProgress
 } from "@mui/material";
 import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/Card";
+import {RefreshCw, Wifi, WifiOff} from "lucide-react";
+import {Alert, AlertDescription} from "./components/ui/Alert";
 
 const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
@@ -161,85 +156,86 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     render() {
         return (
-            <Card className="w-full max-w-5xl mx-auto bg-slate-50">
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center text-slate-800">BibTeX Citation
-                        Generator</CardTitle>
-                </CardHeader>
-                <CardContent>
-                        {(!this.state.file && !this.state.loading) &&
-                            <PDFFileUploader handleChange={async (file: File) => {
-                                this.setState({loading: true})
-                                let base64File = await toBase64(file)
-                                let pdfDoc = await PDFDocument.load(base64File)
-                                const pdfText = await getPDFText(base64File);
-                                const info = await parsePDF(file, pdfDoc, pdfText, file.name)
-                                let pdfFile: PDFFile = {
-                                    name: file.name,
-                                    file: pdfDoc,
-                                    info: info
-                                }
-                                this.setState({
-                                    file: pdfFile,
-                                    loading: false
-                                })
-                            }}/>
-                        }
-                        {this.state.loading &&
-                            <CircularProgress/>
-                        }
-                        {(this.state.file && !this.state.loading) &&
-                            <PDFInfoForm file={this.state.file}
-                                         onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                             bibTexEntries,
-                                             keywords,
-                                             similarPreprints,
-                                             latex: false,
-                                             uploadDialog: true
-                                         })}
-                                         onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                             bibTexEntries,
-                                             keywords,
-                                             similarPreprints,
-                                             latex: true,
-                                             uploadDialog: true
-                                         })}/>
-                        }
-                        <Dialog
-                            open={this.state.uploadDialog}
-                            onClose={() => this.setState({uploadDialog: false})}
-                            aria-labelledby="alert-dialog-title"
-                            aria-describedby="alert-dialog-description"
-                        >
-                            <DialogTitle id="alert-dialog-title">
-                                {"Upload Preprint to Online Repository?"}
-                            </DialogTitle>
-                            <DialogContent>
-                                <DialogContentText id="alert-dialog-description">
-                                    Would you like to upload your preprint to our online repository? Uploading allows
-                                    your document to be accessible online and suggested as related literature to others.
-                                    If you choose not to upload, the document will not be available online or suggested
-                                    to other users.
-                                </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    onClick={async () => {
-                                        this.setState({uploadDialog: false})
-                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, true)
-                                    }}
-                                    autoFocus>
-                                    Agree
-                                </Button>
-                                <Button
-                                    onClick={async () => {
-                                        this.setState({uploadDialog: false})
-                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, false)
-                                    }}>Disagree</Button>
-                            </DialogActions>
-                        </Dialog>
-                </CardContent>
-            </Card>)
+            <div className="h-screen flex items-center justify-center">
+                <Card className="w-full max-w-5xl mx-auto bg-white shadow-xl border border-indigo-100">
+                    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-lg">
+                        <CardTitle className="font-bold text-center text-white text-2xl">CiteAssist</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <Button onClick={() => {
+                                this.setState({file: undefined, uploadDialog: false})
+                            }} className="flex items-center gap-2 hover:bg-gray-100">
+                                <RefreshCw size={16}/>
+                                RESET
+                            </Button>
+                            <div
+                                className={`flex items-center gap-2 ${this.state.apiConnected ? 'text-green-500' : 'text-red-500'}`}>
+                                {this.state.apiConnected ? <Wifi size={16}/> : <WifiOff size={16}/>}
+                                <span className="font-medium">
+                              {this.state.apiConnected ? "Connected" : "Disconnected"}
+                            </span>
+                            </div>
+                        </div>
+
+                        {!this.state.file && !this.state.loading && (
+                            <div className="flex justify-center items-center flex-col">
+                                <PDFFileUploader handleChange={async (file: File) => {
+                                    this.setState({loading: true})
+                                    let base64File = await toBase64(file)
+                                    let pdfDoc = await PDFDocument.load(base64File)
+                                    const pdfText = await getPDFText(base64File);
+                                    const info = await parsePDF(file, pdfDoc, pdfText, file.name)
+                                    let pdfFile: PDFFile = {
+                                        name: file.name,
+                                        file: pdfDoc,
+                                        info: info
+                                    }
+                                    this.setState({
+                                        file: pdfFile,
+                                        loading: false
+                                    })
+                                }}/>
+                            </div>
+                        )}
+
+                        {this.state.loading && (
+                            <div className="flex justify-center items-center h-64">
+                                <CircularProgress/>
+                            </div>
+                        )}
+
+                        {this.state.file && !this.state.loading && (
+                            <PDFInfoForm
+                                file={this.state.file}
+                                onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.setState({
+                                    bibTexEntries,
+                                    keywords,
+                                    similarPreprints,
+                                    latex: false,
+                                    uploadDialog: true
+                                })}
+                                onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.setState({
+                                    bibTexEntries,
+                                    keywords,
+                                    similarPreprints,
+                                    latex: true,
+                                    uploadDialog: true
+                                })}/>
+                        )}
+
+
+                        {!this.state.apiConnected && (
+                            <Alert variant="destructive" className="mt-6">
+                                <AlertDescription>
+                                    Unable to connect to the backend. Some features may be unavailable.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
     private async OnGeneration(bibTexEntries: {

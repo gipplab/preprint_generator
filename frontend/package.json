@@ -9,6 +9,7 @@
     "@mui/lab": "^5.0.0-alpha.114",
     "@mui/material": "^5.11.2",
     "@mui/x-date-pickers": "^5.0.12",
+    "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-radio-group": "^1.2.0",
     "@radix-ui/react-select": "^2.1.1",
