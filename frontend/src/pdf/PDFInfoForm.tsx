@@ -33,6 +33,7 @@ import {Badge} from '../components/ui/Badge';
 import {GenerateLatexButton} from "../latex/GenerateLatexButton";
 import "../output.css"
 import {MenuItem} from "@mui/material";
+import {Separator} from "../components/ui/Seperator";
 
 // const Transition = React.forwardRef(function Transition(
 //     props: TransitionProps & {
@@ -46,6 +47,27 @@ type BibTexEntries = {
     [key: string]: BibTexEntry;
 };
 
+class RelatedPaper extends React.Component<{
+    title: string,
+    authors: string | undefined,
+    year: string | undefined,
+    onRemove: () => void
+}> {
+    render() {
+        let {title, authors, year, onRemove} = this.props;
+        return (
+            <div className="flex items-center justify-between p-3 border rounded-lg mb-2">
+                <div>
+                    <p className="font-medium">{title}</p>
+                    <p className="text-sm text-gray-600">{authors} ({year})</p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={onRemove}>
+                    <X className="h-4 w-4"/>
+                </Button>
+            </div>
+        );
+    }
+}
 
 export function PDFInfoForm(props: {
     file: PDFFile,
@@ -110,6 +132,7 @@ export function PDFInfoForm(props: {
     const [newFieldName, setNewFieldName] = useState('');
     const [newFieldValue, setNewFieldValue] = useState('');
     const [suggestedFields, setSuggestedFields] = useState<string[]>([]);
+    const [arxivInput, setArxivInput] = useState('');
 
     const addKeyword = () => {
         if (keywordInput.trim() !== '' && !keywords.includes(keywordInput.trim())) {
@@ -151,6 +174,29 @@ export function PDFInfoForm(props: {
         setCustomFields(customFields.filter((_, i) => i !== index));
     };
 
+    const removeRelatedPaper = (title: string) => {
+        setRelatedPapers(relatedPapers.filter(paper => paper.title !== title));
+    };
+
+    const loadRelatedPapers = () => {
+        // This is a placeholder function. In a real application, you would fetch related papers based on keywords.
+        console.log("Loading related papers based on keywords:", keywords);
+    };
+
+    const addRelatedPaper = () => {
+        // This is a placeholder function. In a real application, you would fetch the paper details from the arXiv API.
+        if (arxivInput.trim() !== '') {
+            const newPaper = {
+                id: Date.now(), // Using timestamp as a simple unique id
+                title: `Paper from arXiv ID: ${arxivInput}`,
+                authors: "Authors to be fetched",
+                year: new Date().getFullYear()
+            };
+            setRelatedPapers([...relatedPapers, newPaper]);
+            setArxivInput('');
+        }
+    };
+
     const RequiredBadge = () => (
         <Badge variant="secondary" className="ml-2 flex items-center space-x-1">
             <Asterisk className="h-3 w-3 text-red-500 mr-1"/> Required
@@ -160,7 +206,7 @@ export function PDFInfoForm(props: {
 
     return <>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsList className="grid w-full grid-cols-5 mb-4 bg-cyan-300">
                 <TabsTrigger value="basic" className="relative">
                     Basic Info
                     <RequiredBadge/>
@@ -322,10 +368,22 @@ export function PDFInfoForm(props: {
                     Proceed to Generate
                 </Button>
             </TabsContent>
+
             <TabsContent value="keywords-related">
                 <div className="space-y-6">
                     <div>
                         <Label htmlFor="keywords">Keywords</Label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                            {keywords.map((keyword, index) => (
+                                <Badge key={index} variant="secondary" className="px-2 py-1">
+                                    {keyword}
+                                    <Button variant="ghost" size="sm" className="ml-1 p-0"
+                                            onClick={() => removeKeyword(keyword)}>
+                                        <X className="h-3 w-3"/>
+                                    </Button>
+                                </Badge>
+                            ))}
+                        </div>
                         <div className="flex space-x-2">
                             <Input
                                 id="keywords"
@@ -338,26 +396,40 @@ export function PDFInfoForm(props: {
                                 <Plus className="h-4 w-4"/>
                             </Button>
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {keywords.map((keyword, index) => (
-                                <Badge key={index} variant="secondary" className="text-sm">
-                                    {keyword}
-                                    <button onClick={() => removeKeyword(keyword)} className="ml-1 text-xs">
-                                        <X className="h-3 w-3"/>
-                                    </button>
-                                </Badge>
-                            ))}
+                    </div>
+                    <div>
+                        <Label>Related Papers</Label>
+                        {relatedPapers.map(paper => (
+                            <RelatedPaper
+                                key={paper.title}
+                                title={paper.title}
+                                authors={paper.author}
+                                year={paper.year}
+                                onRemove={() => removeRelatedPaper(paper.title)}
+                            />
+                        ))}
+                        <div className="mt-4 space-y-4">
+                            <Button onClick={loadRelatedPapers} className="w-full">
+                                Load Related Papers Based on Keywords
+                            </Button>
+                            <div className="flex items-center justify-center">
+                                <Separator className="flex-grow"/>
+                                <span className="px-2 text-sm text-gray-500">or</span>
+                                <Separator className="flex-grow"/>
+                            </div>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Paste arXiv ID here"
+                                    value={arxivInput}
+                                    onChange={(e) => setArxivInput(e.target.value)}
+                                />
+                                <Button onClick={addRelatedPaper}>
+                                    <Plus className="h-4 w-4 mr-2"/> Add Paper
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Related Papers</Label>
-                        <Button variant="outline" className="w-full">Load Related Papers</Button>
-                        <Button variant="outline" className="w-full">Add Other Related Papers</Button>
-                    </div>
                 </div>
-                <Button onClick={() => setActiveTab('generate')} className="w-full mt-4">
-                    Proceed to Generate
-                </Button>
             </TabsContent>
 
             <TabsContent value="parse">
