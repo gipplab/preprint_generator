@@ -4,7 +4,7 @@ import {BibTexEntry} from "../pdf/PDFFileForm";
 
 export const parseBibTex = (input: string): BibTexEntry[] | null => {
     try {
-        const parsed = parse(input);
+        const parsed = parse(input, {raw: true});
         console.log(parsed)
         return transformParsedData(parsed.entries);
     } catch (error) {

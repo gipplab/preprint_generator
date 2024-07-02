@@ -76,6 +76,7 @@ export function PDFInfoForm(props: {
         school: {name: "School", tag: "school", default: true, value: "", type: ""},
         note: {name: "Note", tag: "note", default: true, value: "", type: ""},
         institution: {name: "Institution", tag: "institution", default: true, value: "", type: ""},
+        confacronym: {name: "confacronym", tag: "confacronym", default: false, value: "", type: ""},
     }
     const artTypeFields: { [type: string]: BibTexEntry[] } = {
         "article": [bibTexEntries.journal, bibTexEntries.volume, bibTexEntries.number, bibTexEntries.pages],
@@ -144,8 +145,15 @@ export function PDFInfoForm(props: {
             generate = false
             setArtRefError(true)
         }
+        const submitBibtexEntries: { [p: string]: string } = {}
+        Object.entries(bibTexEntries).forEach(entry => {
+            submitBibtexEntries[entry[0]] = entry[1]
+        })
+        customFields.forEach(entry => {
+            submitBibtexEntries[entry.name.toLowerCase()] = entry.value
+        })
         if (generate) {
-            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1), generationType !== "pdf", upload)
+            props.onSubmit(submitBibtexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1), generationType !== "pdf", upload)
         }
     }
 
@@ -243,6 +251,10 @@ export function PDFInfoForm(props: {
             <Asterisk className="h-3 w-3 text-red-500 mr-1"/> Required
         </Badge>
     );
+
+    function isValidNumber(value: string): boolean {
+        return !isNaN(parseFloat(value)) && isFinite(parseFloat(value));
+    }
 
 
     return <>
@@ -369,7 +381,11 @@ export function PDFInfoForm(props: {
                             <Input id={entry.tag} placeholder={`Enter the ${entry.name}`} type={entry.type}
                                    value={entry.value} onChange={e => {
                                 entry.error = false
+                                console.log(isNaN(parseInt(e.target.value)))
                                 setEntries(entries.map((obj) => {
+                                    if (entry.type === "number" && !isValidNumber(e.target.value)) {
+                                        return obj
+                                    }
                                     if (obj === entry) {
                                         return {...obj, value: e.target.value}
                                     }

@@ -1,4 +1,4 @@
-import {PDFDocument, PDFName} from 'pdf-lib';
+import {PDFDocument, PDFFont, PDFName, StandardFonts} from 'pdf-lib';
 import {jsPDF} from 'jspdf';
 import {RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
 import unidecode from "unidecode";
@@ -27,9 +27,9 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     pdf.setFont('helvetica', 'normal');
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
     const url = `${baseUrl}/preprint/${uuid}`;
-    if (onlineLink) {
+    if (onlineLink || bibTexEntries.url) {
         topMargin += 30
-        pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: url});
+        pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: bibTexEntries.url || url});
     }
 
     // Citation Box
@@ -100,7 +100,7 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
 }
 
 
-async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuffer): Promise<PDFDocument> {
+async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuffer, conferenceAcronym: string | null = null): Promise<PDFDocument> {
     const citationPdfDoc = await PDFDocument.load(citationPdfBytes);
     originalPdfDoc.getPageCount();
 // Merge the PDFs
@@ -118,13 +118,22 @@ async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuf
     const buttonHeight = 201 * buttonScale;  // Set the button height
     const buttonX = width - buttonWidth - 10;  // Position the button X pixels from the right edge
     const buttonY = height - buttonHeight - 10;  // Position the button Y pixels from the bottom edge
-
+    const courierFont = await originalPdfDoc.embedFont(StandardFonts.CourierBold)
     firstPage.drawImage(buttonImage, {
         x: buttonX,
         y: buttonY,
         width: buttonWidth,
         height: buttonHeight
     })
+    if (conferenceAcronym) {
+        firstPage.drawText(conferenceAcronym, {
+            x: 10,
+            y: height - 20,
+            size: 10,
+            font: courierFont,
+
+        })
+    }
     let link = originalPdfDoc.context.register(
         originalPdfDoc.context.obj({
             Type: 'Annot',
@@ -160,7 +169,7 @@ export async function createBibTexAnnotation(file: PDFDocument, uuid: string, bi
     const bibTexBytes = citation.pdf
 
     // Merge the new citation PDF with the original PDF
-    let pdfBytes = await mergePDFs(file, bibTexBytes);
+    let pdfBytes = await mergePDFs(file, bibTexBytes, bibTexEntries.confacronym);
 
     // Return the annotation text (or modify as per your requirement)
     return {text: bibTexText, bytes: await pdfBytes.save()};
