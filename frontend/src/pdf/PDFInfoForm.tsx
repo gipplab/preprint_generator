@@ -89,7 +89,7 @@ export function PDFInfoForm(props: {
         "techreport": [bibTexEntries.institution, bibTexEntries.address, bibTexEntries.number],
         "unpublished": [],
     }
-    //const [keywords, setKeywords] = useState<string[]>(props.file!.info.keywords)
+    const [keywords, setKeywords] = useState<string[]>(props.file!.info.keywords)
     const [open, setOpen] = useState(false)
     const [similarPapers, setSimilarPapers] = useState<RelatedPaperInfo[]>([])
     const [relatedPapers, setRelatedPapers] = useState<RelatedPaperInfo[]>([])
@@ -105,11 +105,11 @@ export function PDFInfoForm(props: {
 
     const [activeTab, setActiveTab] = useState('basic');
     const [generationType, setGenerationType] = useState('pdf');
-    const [keywords, setKeywords] = useState<string[]>([]);
     const [keywordInput, setKeywordInput] = useState('');
     const [customFields, setCustomFields] = useState<{ name: string, value: string }[]>([]);
     const [newFieldName, setNewFieldName] = useState('');
     const [newFieldValue, setNewFieldValue] = useState('');
+    const [suggestedFields, setSuggestedFields] = useState<string[]>([]);
 
     const addKeyword = () => {
         if (keywordInput.trim() !== '' && !keywords.includes(keywordInput.trim())) {
@@ -123,10 +123,27 @@ export function PDFInfoForm(props: {
     };
 
     const addCustomField = () => {
+        if (entries.map(entry => entry.name).indexOf(newFieldName) !== -1) {
+            return
+        }
+        if (customFields.map(entry => entry.name).indexOf(newFieldName) !== -1) {
+            return
+        }
         if (newFieldName.trim() !== '' && newFieldValue.trim() !== '') {
             setCustomFields([...customFields, {name: newFieldName.trim(), value: newFieldValue.trim()}]);
             setNewFieldName('');
             setNewFieldValue('');
+        }
+    };
+
+    const addSuggestedField = (fieldName: string) => {
+        if (!customFields.some(field => field.name === fieldName)) {
+            const extractedValue = Object.values(bibTexEntries).find(entry => entry.name === fieldName)
+            if (extractedValue) {
+                setCustomFields([...customFields, {name: fieldName, value: extractedValue.value}]);
+            } else {
+                setCustomFields([...customFields, {name: fieldName, value: ""}]);
+            }
         }
     };
 
@@ -163,6 +180,9 @@ export function PDFInfoForm(props: {
                         <Label htmlFor="type">Type</Label>
                         <Select value={artType} onValueChange={event => {
                             setEntries(artTypeFields[event])
+                            setSuggestedFields(Object.values(bibTexEntries).filter(entry => {
+                                return artTypeFields[event].map(e => e.tag).indexOf(entry.tag) === -1
+                            }).map(entry => entry.name))
                             setArtType(event)
                         }}>
                             <SelectTrigger className="w-full">
@@ -225,7 +245,8 @@ export function PDFInfoForm(props: {
                     {entries.map((entry) => {
                         return (<div>
                             <Label htmlFor={entry.tag}>{entry.name}</Label>
-                            <Input id={entry.tag} placeholder={`Enter the ${entry.name}`} type={entry.type} value={entry.value} onChange={e => {
+                            <Input id={entry.tag} placeholder={`Enter the ${entry.name}`} type={entry.type}
+                                   value={entry.value} onChange={e => {
                                 entry.error = false
                                 setEntries(entries.map((obj) => {
                                     if (obj === entry) {
@@ -243,7 +264,14 @@ export function PDFInfoForm(props: {
                         {customFields.map((field, index) => (
                             <div key={index} className="flex items-center space-x-2 mb-2">
                                 <Input value={field.name} readOnly className="w-1/3"/>
-                                <Input value={field.value} readOnly className="w-2/3"/>
+                                <Input className="w-2/3" placeholder="Enter value" value={field.value} onChange={e => {
+                                    setCustomFields(customFields.map((obj) => {
+                                        if (obj.name === field.name) {
+                                            return {...obj, value: e.target.value}
+                                        }
+                                        return obj
+                                    }))
+                                }}/>
                                 <Button onClick={() => removeCustomField(index)} size="icon"
                                         variant="ghost">
                                     <X className="h-4 w-4"/>
@@ -272,6 +300,21 @@ export function PDFInfoForm(props: {
                             <Button onClick={addCustomField} size="icon">
                                 <Plus className="h-4 w-4"/>
                             </Button>
+                        </div>
+                    </div>
+                    <div>
+                        <Label>Suggested Fields</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {suggestedFields.map((field) => (
+                                <Badge
+                                    key={field}
+                                    variant="outline"
+                                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                                    onClick={() => addSuggestedField(field)}
+                                >
+                                    {field}
+                                </Badge>
+                            ))}
                         </div>
                     </div>
                 </div>

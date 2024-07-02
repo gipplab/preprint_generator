@@ -157,7 +157,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     render() {
         return (
-            <div className="h-screen flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center overflow-y-auto">
                 <Card className="w-full max-w-5xl mx-auto bg-white shadow-xl border border-indigo-100">
                     <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-lg">
                         <CardTitle className="font-bold text-center text-white text-3xl">CiteAssist</CardTitle>
@@ -247,7 +247,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
                             >
-                                <GitHubIcon />
+                                <GitHubIcon/>
                                 View on GitHub
                             </a>
                         </div>
