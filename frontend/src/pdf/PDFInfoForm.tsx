@@ -201,6 +201,10 @@ export function PDFInfoForm(props: {
         setRelatedPapers(relatedPapers.filter(paper => paper.title !== title));
     };
 
+    const removeSimilarPaper = (title: string) => {
+        setSimilarPapers(similarPapers.filter(paper => paper.title !== title));
+    };
+
     const loadRelatedPapers = async () => {
         // This is a placeholder function. In a real application, you would fetch related papers based on keywords.
         console.log("Loading related papers based on keywords:", keywords);
@@ -505,7 +509,7 @@ export function PDFInfoForm(props: {
                                 title={paper.title}
                                 authors={paper.author}
                                 year={paper.year}
-                                onRemove={() => removeRelatedPaper(paper.title)}
+                                onRemove={() => removeSimilarPaper(paper.title)}
                             />
                         ))}
                         <div className="mt-4 space-y-4">
