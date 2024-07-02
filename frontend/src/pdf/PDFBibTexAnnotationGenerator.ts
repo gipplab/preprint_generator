@@ -12,32 +12,33 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
         unit: 'pt',
         format: [size.width, size.height]
     });
+
     const leftMargin = 50;
-    var topMargin = 50;
+    let topMargin = 50;
     const pageWidth = pdf.internal.pageSize.getWidth();
 
     // Header Title
-    pdf.setFontSize(25);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Citation for this Paper', leftMargin, topMargin);
+    pdf.setFontSize(20);
+    pdf.setFont('modern', 'bold');
+    pdf.text('Citation for this Paper', size.width / 2, topMargin, {align: "center"});
 
     // Online Version Link
     pdf.setFontSize(12);
     pdf.setTextColor("#0000EE")
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('modern', 'normal');
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
     const url = `${baseUrl}/preprint/${uuid}`;
     if (onlineLink || bibTexEntries.url) {
-        topMargin += 30
+        topMargin += 20
         pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: bibTexEntries.url || url});
     }
 
     // Citation Box
-    const citationStartY = topMargin + 20;
-    const citationBoxPadding = 40;
+    const citationStartY = topMargin + 15;
+    const citationBoxPadding = 25;
     pdf.setFont('courier', 'normal');
     pdf.setTextColor("#000000")
-    pdf.setFontSize(12);
+    pdf.setFontSize(8);
 
     let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]}`
     delete bibTexEntries["artType"]
@@ -53,7 +54,9 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     const linesBibtex: string[] = pdf.splitTextToSize(bibAnnotationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
     const filteredLinesBibtex = linesBibtex.map(s => unidecode(s))
 
-    const citationBoxHeight = filteredLinesBibtex.length * 12 * 1.1 + 2 * citationBoxPadding;
+    console.log(pdf.getLineHeightFactor())
+    console.log(pdf.getLineHeight())
+    const citationBoxHeight = (filteredLinesBibtex.length - 1) * pdf.getLineHeight() + 2 * citationBoxPadding;
 
     const cornerRadius = 20; // Radius of the rounded corners
     pdf.roundedRect(leftMargin, citationStartY, pageWidth - 2 * leftMargin, citationBoxHeight, cornerRadius, cornerRadius);
@@ -64,14 +67,15 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     }
 
     // Related Papers Section
-    const relatedPapersStartY = citationStartY + citationBoxHeight + 50;
-    pdf.setFont('helvetica', 'bold');
+    const relatedPapersStartY = citationStartY + citationBoxHeight + 30;
+    pdf.setFontSize(13);
+    pdf.setFont('modern', 'bold');
     pdf.text('Related Papers', leftMargin, relatedPapersStartY);
 
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setFont('modern', 'normal');
 
-    let currentY = relatedPapersStartY + 50; // Initial Y position for the first related paper
+    let currentY = relatedPapersStartY + 20; // Initial Y position for the first related paper
     const lineHeight = 10; // Adjust based on your font size and line spacing
 
     similarPreprints.forEach((preprint, index) => {
