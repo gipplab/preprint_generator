@@ -31,7 +31,6 @@ interface AppState {
     file?: PDFFile;
     loading: boolean;
     latex: boolean;
-    uploadDialog: boolean;
     bibTexEntries: { [p: string]: string };
     keywords: string[];
     similarPreprints: RelatedPaperInfo[];
@@ -101,7 +100,6 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             apiConnected: false,
             loading: false,
             latex: false,
-            uploadDialog: false,
             bibTexEntries: {},
             keywords: [],
             similarPreprints: []
@@ -165,7 +163,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                     <CardContent className="p-6">
                         <div className="flex justify-between items-center mb-6">
                             <Button onClick={() => {
-                                this.setState({file: undefined, uploadDialog: false})
+                                this.setState({file: undefined})
                             }} className="flex items-center gap-2 hover:bg-gray-100">
                                 <RefreshCw size={16}/>
                                 RESET
@@ -213,20 +211,8 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                         {this.state.file && !this.state.loading && (
                             <PDFInfoForm
                                 file={this.state.file}
-                                onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                    bibTexEntries,
-                                    keywords,
-                                    similarPreprints,
-                                    latex: false,
-                                    uploadDialog: true
-                                })}
-                                onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                    bibTexEntries,
-                                    keywords,
-                                    similarPreprints,
-                                    latex: true,
-                                    uploadDialog: true
-                                })}/>
+                                onSubmit={async (bibTexEntries, keywords, similarPreprints, latex, upload) => await this.OnGeneration(bibTexEntries, keywords, similarPreprints, latex, upload)
+                                }/>
                         )}
 
 

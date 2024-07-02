@@ -1,25 +1,9 @@
 import {PDFFile} from "./PDFParser";
 import {BibTexEntry, PDFFileForm} from "./PDFFileForm";
-import {TagInputField} from "../inputComponents/TagInputField";
 import React, {useState} from "react";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ClearIcon from '@mui/icons-material/Clear';
-// import {
-//     Accordion, AccordionDetails, AccordionSummary, Box,
-//     Button,
-//     Dialog,
-//     DialogActions,
-//     DialogContent,
-//     DialogContentText,
-//     DialogTitle, IconButton,
-//     Slide, styled,
-//     TextField, Typography
-// } from "@mui/material";
-import {TransitionProps} from "@mui/material/transitions";
+
 import {arxivid2doi, doi2bib, RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
 import {requestPreprints} from "../EnhancedPreprintGenerator";
-import {GenerateButton} from "../inputComponents/GenerateButton";
-import {Card, CardContent, CardHeader, CardTitle} from "../components/ui/Card"
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '../components/ui/Select';
@@ -30,10 +14,9 @@ import {Alert, AlertDescription, AlertTitle} from '../components/ui/Alert';
 import {AlertTriangle, FileDown, Upload, Plus, X, Asterisk} from 'lucide-react';
 import {RadioGroup, RadioGroupItem} from '../components/ui/RadioGroup';
 import {Badge} from '../components/ui/Badge';
-import {GenerateLatexButton} from "../latex/GenerateLatexButton";
 import "../output.css"
-import {MenuItem} from "@mui/material";
 import {Separator} from "../components/ui/Seperator";
+import {parseBibTex} from "../annotation/AnnotationParser";
 
 // const Transition = React.forwardRef(function Transition(
 //     props: TransitionProps & {
@@ -69,14 +52,12 @@ class RelatedPaper extends React.Component<{
     }
 }
 
+
 export function PDFInfoForm(props: {
     file: PDFFile,
-    onSubmitPDF: (bibTexEntries: {
+    onSubmit: (bibTexEntries: {
         [id: string]: string
-    }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void,
-    onSubmitLatex: (bibTexEntries: {
-        [id: string]: string
-    }, keywords: string[], similarPreprints: RelatedPaperInfo[]) => void
+    }, keywords: string[], similarPreprints: RelatedPaperInfo[], latex: boolean, upload: boolean) => void
 }) {
     const bibTexEntries: BibTexEntries = {
         pages: {name: "Pages", tag: "pages", default: true, value: "" + props.file.info.pages, type: "number"},
@@ -112,18 +93,18 @@ export function PDFInfoForm(props: {
         "unpublished": [],
     }
     const [keywords, setKeywords] = useState<string[]>(props.file!.info.keywords)
-    const [open, setOpen] = useState(false)
     const [similarPapers, setSimilarPapers] = useState<RelatedPaperInfo[]>([])
     const [relatedPapers, setRelatedPapers] = useState<RelatedPaperInfo[]>([])
-    const [relatedPaperTmp, setRelatedPaperTmp] = useState<RelatedPaperInfo | null>(null)
-    const [id, setId] = useState("")
     const [entries, setEntries] = useState<BibTexEntry[]>([]);
     const [publishDate, setPublishDate] = useState(props.file.info.date)
     const [artType, setArtType] = useState("")
     const [artRef, setArtRef] = useState(props.file.info.artTitle)
     const [artTitle, setArtTitle] = useState(props.file.info.title)
-    const [artAuthor, setArtAuthor] = useState(props.file.info.author)
+    const [artAuthor, setArtAuthor] = useState(props.file.info.author || "")
     const [artTypeError, setArtTypeError] = useState(false)
+    const [artRefError, setArtRefError] = useState(false)
+    const [artTitleError, setArtTitleError] = useState(false)
+    const [artAuthorError, setArtAuthorError] = useState(false)
 
     const [activeTab, setActiveTab] = useState('basic');
     const [generationType, setGenerationType] = useState('pdf');
@@ -133,6 +114,40 @@ export function PDFInfoForm(props: {
     const [newFieldValue, setNewFieldValue] = useState('');
     const [suggestedFields, setSuggestedFields] = useState<string[]>([]);
     const [arxivInput, setArxivInput] = useState('');
+    const [bibtexInput, setBibtexInput] = useState('');
+
+    function handleSubmit(upload: boolean) {
+        const bibTexEntries: { [id: string]: string } = {}
+        bibTexEntries["artType"] = artType
+        bibTexEntries["ref"] = artRef
+        bibTexEntries["author"] = artAuthor
+        bibTexEntries["title"] = artTitle
+        entries.forEach((entry) => {
+            bibTexEntries[entry.tag] = entry.value
+        })
+        bibTexEntries["year"] = "" + publishDate.getFullYear()
+        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
+        let generate = true
+        if (artType === "") {
+            generate = false
+            setArtTypeError(true)
+        }
+        if (artAuthor === "") {
+            generate = false
+            setArtAuthorError(true)
+        }
+        if (artTitle === "") {
+            generate = false
+            setArtTitleError(true)
+        }
+        if (artRef === "") {
+            generate = false
+            setArtRefError(true)
+        }
+        if (generate) {
+            props.onSubmit(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1), generationType !== "pdf", upload)
+        }
+    }
 
     const addKeyword = () => {
         if (keywordInput.trim() !== '' && !keywords.includes(keywordInput.trim())) {
@@ -178,22 +193,48 @@ export function PDFInfoForm(props: {
         setRelatedPapers(relatedPapers.filter(paper => paper.title !== title));
     };
 
-    const loadRelatedPapers = () => {
+    const loadRelatedPapers = async () => {
         // This is a placeholder function. In a real application, you would fetch related papers based on keywords.
         console.log("Loading related papers based on keywords:", keywords);
+        const loadedRelatedPapers = await requestPreprints("", keywords)
+        setSimilarPapers(loadedRelatedPapers || [])
     };
 
-    const addRelatedPaper = () => {
+    const addRelatedPaper = async () => {
         // This is a placeholder function. In a real application, you would fetch the paper details from the arXiv API.
-        if (arxivInput.trim() !== '') {
+        const doiPaper = await doi2bib(arxivInput)
+        if (doiPaper !== null) {
             const newPaper = {
-                id: Date.now(), // Using timestamp as a simple unique id
-                title: `Paper from arXiv ID: ${arxivInput}`,
-                authors: "Authors to be fetched",
-                year: new Date().getFullYear()
+                title: doiPaper.title,
+                author: doiPaper.author,
+                year: doiPaper.year,
+                url: doiPaper.url,
+                doi: doiPaper.doi
             };
+            if (relatedPapers.map(paper => paper.title).indexOf(newPaper.title) !== -1) {
+                setArxivInput('');
+                return
+            }
             setRelatedPapers([...relatedPapers, newPaper]);
             setArxivInput('');
+            return
+        }
+        const arxivPaper = await arxivid2doi(arxivInput)
+        if (arxivPaper !== null) {
+            const newPaper = {
+                title: arxivPaper.title,
+                author: arxivPaper.author,
+                year: arxivPaper.year,
+                url: arxivPaper.url,
+                doi: arxivPaper.doi
+            };
+            if (relatedPapers.map(paper => paper.title).indexOf(newPaper.title) !== -1) {
+                setArxivInput('');
+                return
+            }
+            setRelatedPapers([...relatedPapers, newPaper]);
+            setArxivInput('');
+            return
         }
     };
 
@@ -210,6 +251,8 @@ export function PDFInfoForm(props: {
                 <TabsTrigger value="basic" className="relative">
                     Basic Info
                     <RequiredBadge/>
+                    {(artTypeError || artRefError || artAuthorError || artTitleError) &&
+                        <AlertTriangle className="h-4 w-4 text-red-500 ml-0.5"/>}
                 </TabsTrigger>
                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
                 <TabsTrigger value="keywords-related">Keywords & Related</TabsTrigger>
@@ -230,8 +273,9 @@ export function PDFInfoForm(props: {
                                 return artTypeFields[event].map(e => e.tag).indexOf(entry.tag) === -1
                             }).map(entry => entry.name))
                             setArtType(event)
+                            setArtTypeError(false)
                         }}>
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className={`w-full ${artTypeError ? 'border-red-500' : ''}`}>
                                 <SelectValue placeholder="Article Type"/>
                             </SelectTrigger>
                             <SelectContent>
@@ -250,6 +294,13 @@ export function PDFInfoForm(props: {
                                 <SelectItem value="misc">Miscellaneous: if nothing else fits</SelectItem>
                             </SelectContent>
                         </Select>
+                        {artTypeError && (
+                            <div className="flex flex-row items-center">
+                                <AlertTriangle className="h-4 w-4 text-red-500"/>
+                                <div className="text-red-500">Please enter a Type</div>
+                            </div>
+
+                        )}
                     </div>
                     <div>
                         <Label htmlFor="publish-date">Publish Date</Label>
@@ -262,20 +313,44 @@ export function PDFInfoForm(props: {
                         <Label htmlFor="reference">Reference</Label>
                         <Input id="reference" placeholder="Enter the Reference" value={artRef} onChange={e => {
                             setArtRef(e.target.value)
+                            setArtRefError(false)
                         }}/>
+                        {artRefError && (
+                            <div className="flex flex-row items-center">
+                                <AlertTriangle className="h-4 w-4 text-red-500"/>
+                                <div className="text-red-500">Please enter a Reference</div>
+                            </div>
+
+                        )}
                     </div>
                     <div>
                         <Label htmlFor="title">Title</Label>
                         <Input id="title" placeholder="Enter the Title" value={artTitle} onChange={e => {
+                            setArtTitleError(false)
                             setArtTitle(e.target.value)
                         }}/>
+                        {artTitleError && (
+                            <div className="flex flex-row items-center">
+                                <AlertTriangle className="h-4 w-4 text-red-500"/>
+                                <div className="text-red-500">Please enter a Title</div>
+                            </div>
+
+                        )}
                     </div>
                     <div>
                         <Label htmlFor="authors">Authors</Label>
                         <Input id="authors" placeholder="Enter Authors (separated by comma)" value={artAuthor}
                                onChange={e => {
+                                   setArtAuthorError(false)
                                    setArtAuthor(e.target.value)
                                }}/>
+                        {artAuthorError && (
+                            <div className="flex flex-row items-center">
+                                <AlertTriangle className="h-4 w-4 text-red-500"/>
+                                <div className="text-red-500">Please enter a Author</div>
+                            </div>
+
+                        )}
                     </div>
                     <Button variant="outline" onClick={() => setActiveTab('parse')} className="w-full mt-4">
                         Parse from BibTeX
@@ -408,18 +483,27 @@ export function PDFInfoForm(props: {
                                 onRemove={() => removeRelatedPaper(paper.title)}
                             />
                         ))}
+                        {similarPapers.map(paper => (
+                            <RelatedPaper
+                                key={paper.title}
+                                title={paper.title}
+                                authors={paper.author}
+                                year={paper.year}
+                                onRemove={() => removeRelatedPaper(paper.title)}
+                            />
+                        ))}
                         <div className="mt-4 space-y-4">
                             <Button onClick={loadRelatedPapers} className="w-full">
                                 Load Related Papers Based on Keywords
                             </Button>
                             <div className="flex items-center justify-center">
-                                <Separator className="flex-grow"/>
+                                <Separator className="w-96"/>
                                 <span className="px-2 text-sm text-gray-500">or</span>
-                                <Separator className="flex-grow"/>
+                                <Separator className="w-96"/>
                             </div>
                             <div className="flex gap-2">
                                 <Input
-                                    placeholder="Paste arXiv ID here"
+                                    placeholder="Paste arXiv ID or DOI here"
                                     value={arxivInput}
                                     onChange={(e) => setArxivInput(e.target.value)}
                                 />
@@ -444,9 +528,57 @@ export function PDFInfoForm(props: {
                     </Alert>
                     <div>
                         <Label htmlFor="bibtex-input">Paste BibTeX Here</Label>
-                        <Textarea id="bibtex-input" placeholder="Paste your BibTeX entry here" rows={10}/>
+                        <Textarea id="bibtex-input" placeholder="Paste your BibTeX entry here" rows={10}
+                                  value={bibtexInput} onChange={e => setBibtexInput(e.target.value)}/>
                     </div>
-                    <Button className="w-full">Parse BibTeX</Button>
+                    <Button className="w-full" onClick={() => {
+                        let newEntries = parseBibTex(bibtexInput)
+                        console.log(newEntries)
+                        if (!newEntries) {
+                            return
+                        }
+                        setArtType(newEntries.find((entry) => {
+                            return (entry.tag === "type" && !entry.default)
+                        })?.value || "")
+
+                        setArtTitle(newEntries.find((entry) => {
+                            return (entry.tag === "title")
+                        })?.value || "")
+
+                        setArtAuthor(newEntries.find((entry) => {
+                            return (entry.tag === "author")
+                        })?.value || "")
+
+                        setArtRef(newEntries.find((entry) => {
+                            return (entry.tag === "ref")
+                        })?.value || "")
+
+                        const month = newEntries.find((entry) => {
+                            return (entry.tag === "month")
+                        })?.value || ""
+                        const year = newEntries.find((entry) => {
+                            return (entry.tag === "year")
+                        })?.value || ""
+
+                        newEntries = newEntries.filter((entry) => {
+                            return (["type", "year", "month", "ref", "author", "title"].indexOf(entry.tag) === -1)
+                        })
+
+                        setPublishDate(new Date(`${month}/01/${year}`))
+
+                        newEntries.map((entry) => {
+                            const simEntry = Object.entries(bibTexEntries).find(([key, value]) => {
+                                return entry.tag === key
+                            })
+                            if (simEntry) {
+                                return {type: simEntry[1].type || "", ...entry}
+                            } else {
+                                return entry
+                            }
+                        })
+
+                        setEntries(newEntries);
+                    }}>Parse BibTeX</Button>
                 </div>
                 <Button onClick={() => setActiveTab('generate')} className="w-full mt-4">
                     Proceed to Generate
@@ -471,10 +603,16 @@ export function PDFInfoForm(props: {
                     </div>
 
                     <div className="flex flex-col space-y-2">
-                        <Button className="w-full flex items-center justify-center">
+                        <Button className="w-full flex items-center justify-center" onClick={() =>
+                            handleSubmit(false)
+                        }>
                             <FileDown className="mr-2 h-4 w-4"/> Generate {generationType.toUpperCase()}
                         </Button>
-                        <Button className="w-full flex items-center justify-center">
+                        <Button className="w-full flex items-center justify-center" onClick={() => {
+                            console.log("Submit")
+                            handleSubmit(true)
+                        }
+                        }>
                             <Upload className="mr-2 h-4 w-4"/> Generate and
                             Upload {generationType.toUpperCase()}
                         </Button>
@@ -482,191 +620,5 @@ export function PDFInfoForm(props: {
                 </div>
             </TabsContent>
         </Tabs>
-        {/*<Card title="1. Edit BibTex Information">
-                <PDFFileForm info={props.file.info} artType={artType} artTypeError={artTypeError} entries={entries}
-                             publishDate={publishDate}
-                             setArtType={setArtType} setArtTypeError={setArtTypeError} setEntries={setEntries}
-                             setPublishDate={setPublishDate}/>
-            </Card>
-            <Card title="2. Edit relevant preprint Keywords (Optional)">
-                <h6 style={{margin: 10}}></h6>
-                <div style={{position: "relative", bottom: 0, left: 0}}>
-                    <TagInputField keywords={keywords} setKeywords={setKeywords}/>
-                </div>
-            </Card>
-            <Card title="3. Add related papers (Optional)">
-                <div style={{display: "flex", justifyContent: "flex-start", alignItems: "center"}}>
-                    <Button style={{marginBottom: "16px"}} variant="contained"
-                            onClick={async () => {
-                                const loadedRelatedPapers = await requestPreprints("", keywords)
-                                setSimilarPapers(loadedRelatedPapers || [])
-                            }}>
-                        Load Related Preprints based on Keywords
-                    </Button>
-                    <Button style={{marginLeft: "16px", marginBottom: "16px"}} variant="contained"
-                            onClick={() => setOpen(true)}>
-                        Add other Related Papers
-                    </Button>
-                    <Dialog
-                        open={open}
-                        TransitionComponent={Transition}
-                        keepMounted
-                        onClose={() => setOpen(false)}
-                        aria-describedby="alert-dialog-slide-description"
-                    >
-                        <DialogTitle>{"Add Related Paper"}</DialogTitle>
-                        <DialogContent>
-                            <DialogContentText id="related-paper">
-                                Add new related papers with a DOI or arXiv ID
-                            </DialogContentText>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="name"
-                                value={id}
-                                onChange={(value) => {
-                                    setId(value.target.value)
-                                }}
-                                label="DOI or arXiv ID"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                            />
-                            <DialogContentText
-                                id="related-paper-text">{(relatedPaperTmp !== null) ? relatedPaperToString(relatedPaperTmp) : ""}</DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button disabled={relatedPaperTmp === null} onClick={() => {
-                                setRelatedPapers([...relatedPapers, relatedPaperTmp!])
-                                setRelatedPaperTmp(null)
-                                setId("")
-                                setOpen(false)
-                            }}>Add</Button>
-                            <Button onClick={async () => {
-                                const doiPaper = await doi2bib(id)
-                                if (doiPaper !== null) {
-                                    setRelatedPaperTmp(doiPaper!)
-                                    return
-                                }
-                                const arxivPaper = await arxivid2doi(id)
-                                if (arxivPaper !== null) {
-                                    setRelatedPaperTmp(arxivPaper!)
-                                    return
-                                }
-                            }
-                            }>Load</Button>
-                            <Button onClick={() => setOpen(false)}>Close</Button>
-                        </DialogActions>
-                    </Dialog>
-                </div>
-                <div>
-                    {relatedPapers.map((relatedPaper) => {
-                        return (
-                            <Accordion key={"rp" + relatedPaper.title}>
-                                <Box sx={{display: "flex", alignItems: "center"}}>
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon/>}
-                                        aria-controls="panel1a-content"
-                                        sx={{flexGrow: 1}}
-                                        id="panel1a-header"
-                                    >
-                                        <Typography style={{textAlign: "left"}}>{relatedPaper.title}</Typography>
-                                    </AccordionSummary>
-                                    <IconButton style={{marginLeft: "-20px"}}>
-                                        <ClearIcon
-                                            onClick={() => setRelatedPapers(relatedPapers.filter((value) => value !== relatedPaper))}/>
-                                    </IconButton>
-
-                                </Box>
-                                <AccordionDetails>
-                                    <Typography style={{textAlign: "left"}}>
-                                        {relatedPaperToString(relatedPaper)}
-                                    </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        )
-                    })}
-                    {similarPapers.map((similarPaper) => {
-                        return (
-                            <Accordion key={"sp" + similarPaper.title}>
-                                <Box sx={{display: "flex", alignItems: "center"}}>
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon/>}
-                                        aria-controls="panel1a-content"
-                                        sx={{flexGrow: 1}}
-                                        id="panel1a-header"
-                                    >
-                                        <Typography style={{textAlign: "left"}}>{similarPaper.title}</Typography>
-                                    </AccordionSummary>
-                                    <IconButton style={{marginLeft: "-20px"}}>
-                                        <ClearIcon
-                                            onClick={() => setSimilarPapers(similarPapers.filter((value) => value !== similarPaper))}/>
-                                    </IconButton>
-
-                                </Box>
-                                <AccordionDetails>
-                                    <Typography style={{textAlign: "left"}}>
-                                        {relatedPaperToString(similarPaper)}
-                                    </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        )
-                    })}
-                </div>
-            </Card>
-            <div style={{marginBottom: 40}}>
-                <Card title="4. Check all Information">
-                    <GenerateButton onClick={() => {
-                        const bibTexEntries: { [id: string]: string } = {}
-                        bibTexEntries["artType"] = artType
-                        entries.forEach((entry) => {
-                            bibTexEntries[entry.tag] = entry.value
-                        })
-                        bibTexEntries["title"] = bibTexEntries["title"]
-                        bibTexEntries["year"] = "" + publishDate.getFullYear()
-                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
-                        let generate = true
-                        if (artType === "") {
-                            generate = false
-                            setArtTypeError(true)
-                        }
-                        setEntries(entries.map((entry) => {
-                            if (entry.value === "") {
-                                generate = false
-                                return {...entry, error: true}
-                            }
-                            return entry
-                        }))
-                        if (generate) {
-                            props.onSubmitPDF(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
-                        }
-                    }}/>
-                    <GenerateLatexButton style={{marginLeft: 40}} onClick={() => {
-                        const bibTexEntries: { [id: string]: string } = {}
-                        bibTexEntries["artType"] = artType
-                        entries.forEach((entry) => {
-                            bibTexEntries[entry.tag] = entry.value
-                        })
-                        bibTexEntries["title"] = bibTexEntries["title"]
-                        bibTexEntries["year"] = "" + publishDate.getFullYear()
-                        bibTexEntries["month"] = "" + ('0' + (publishDate.getMonth() + 1)).slice(-2)
-                        let generate = true
-                        if (artType === "") {
-                            generate = false
-                            setArtTypeError(true)
-                        }
-                        setEntries(entries.map((entry) => {
-                            if (entry.value === "") {
-                                generate = false
-                                return {...entry, error: true}
-                            }
-                            return entry
-                        }))
-                        if (generate) {
-                            props.onSubmitLatex(bibTexEntries, keywords, [...relatedPapers, ...similarPapers].sort((a, b) => (a.title > b.title) ? 1 : (a.title === b.title) ? 1 : -1))
-                        }
-                    }}/>
-                </Card>
-            </div>*/}
     </>;
 }

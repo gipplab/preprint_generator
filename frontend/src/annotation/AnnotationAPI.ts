@@ -62,7 +62,7 @@ export async function doi2bib(doi_id: string): Promise<RelatedPaperInfo | null> 
 }
 
 function arxivid2doiOptions(arxivid: string) {
-    var options = {
+    const options = {
         url: 'https://export.arxiv.org/api/query?id_list=' + arxivid
     };
     return options;
