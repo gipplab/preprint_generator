@@ -530,6 +530,9 @@ export function PDFInfoForm(props: {
                         </div>
                     </div>
                 </div>
+                <Button onClick={() => setActiveTab('generate')} className="w-full mt-4">
+                    Proceed to Generate
+                </Button>
             </TabsContent>
 
             <TabsContent value="parse">
