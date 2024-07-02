@@ -76,14 +76,14 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     pdf.setFont('modern', 'normal');
 
     let currentY = relatedPapersStartY + 20; // Initial Y position for the first related paper
-    const lineHeight = 10; // Adjust based on your font size and line spacing
+    const lineHeight = pdf.getLineHeight(); // Adjust based on your font size and line spacing
 
     similarPreprints.forEach((preprint, index) => {
         const preprintText = `${index + 1}) ${relatedPaperToString(preprint)}\n\n`;
         const lines: string[] = pdf.splitTextToSize(preprintText, pageWidth - 2 * leftMargin);
 
         const filteredLines = lines.map(s => unidecode(s))
-        const blockHeight = filteredLines.length * lineHeight;
+        const blockHeight = (filteredLines.length - 1) * lineHeight;
 
         // Print the text without making it a link
         pdf.text(filteredLines, leftMargin, currentY);
