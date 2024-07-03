@@ -49,6 +49,7 @@ export function generateLatexSty(acronym: string | null) {
             `      \\textbf{${acronym}}\n` +
             "    };\n" : "") +
         "  \\end{tikzpicture}\n" +
+        "  \\vspace{-1em}\n"+
         "}\n" +
         "\n" +
         "\n" +
