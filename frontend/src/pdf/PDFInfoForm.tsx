@@ -612,7 +612,7 @@ export function PDFInfoForm(props: {
                 <div className="space-y-6">
                     <div>
                         <Label className="text-base">Select Output Format</Label>
-                        <RadioGroup defaultValue="pdf" onValueChange={setGenerationType}
+                        <RadioGroup value={generationType} onValueChange={setGenerationType}
                                     className="flex flex-col space-y-1 mt-2">
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="pdf" id="pdf"/>
