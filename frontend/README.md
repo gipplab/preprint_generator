@@ -1,10 +1,10 @@
-# Frontend for Enhanced Preprint Generator
+# Frontend for CiteAssist
 
-The Enhanced Preprint Generator Frontend is written in TypeScript using React, a popular library for building user interfaces. This frontend provides an intuitive interface for users to generate preprints with related papers and BibTeX annotations.
+CiteAssist Frontend is written in TypeScript using React, a popular library for building user interfaces. This frontend provides an intuitive interface for users to generate preprints with related papers and BibTeX annotations.
 
 ## Prerequisites
 
-To use the Enhanced Preprint Generator, you must have Node version 16.13.0 or higher installed on your machine.
+To use the CiteAssist, you must have Node version 16.13.0 or higher installed on your machine.
 
 ## Getting Started
 To get started, clone this repository and navigate to the ``frontend`` directory. Then, run the following command to install the dependencies:
