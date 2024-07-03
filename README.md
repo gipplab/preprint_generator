@@ -1,4 +1,21 @@
-# CiteAssist
+<br />
+<p align="center">
+<a><img src="images/gipplab.png" alt="CiteAssist" width="128" height="128" title="CiteAssist"></a>
+  <h3 align="center">CiteAssist</h3>
+  <p align="center">
+    CiteAssist generates preprints, suggests related papers, and adds BibTeX annotation to the PDF <br />
+    <p align="center">
+  <a href="https://github.com/gipplab/preprint_generator/actions"><img src="https://github.com/lkaesberg/EmailVerify/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://github.com/gipplab/preprint_generator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lkaesberg/EmailVerify" alt="License"></a>
+  <a href="https://github.com/gipplab/preprint_generator/network/members"><img src="https://img.shields.io/github/forks/lkaesberg/EmailVerify?style=social" alt="GitHub forks"></a>
+  <a href="https://github.com/gipplab/preprint_generator/stargazers"><img src="https://img.shields.io/github/stars/lkaesberg/EmailVerify?style=social" alt="GitHub stars"></a>
+</p>
+    <p>
+    <a href="https://github.com/gipplab/preprint_generator/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/gipplab/preprint_generator/issues">Request Feature</a>
+  </p>
+</p>
 
 ### [Try it yourself!](https://preprint.larskaesberg.de/)
 
@@ -51,5 +68,5 @@ Website: [https://preprint.larskaesberg.de](https://preprint.larskaesberg.de)
 ## TODO
 
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
-- [ ] website for each preprint in backend (pdf, annotation, related papers)
+- [x] website for each preprint in backend (pdf, annotation, related papers)
 - [ ] [alpaca lora](https://github.com/tloen/alpaca-lora) for metadata extraction
