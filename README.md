@@ -47,24 +47,6 @@ We welcome contributions to CiteAssist! If you encounter a bug, have a feature r
 
 This project is licensed under the MIT License. Please refer to the [LICENSE](COPYING) file for more information.
 
-## Demo
-Website: [https://preprint.larskaesberg.de](https://preprint.larskaesberg.de)
-### Hompage
-![EPG-Demo1.png](pictures%2FEPG-Demo1.png)
-
------
-### Metadata Form
-![EPG-Demo3.png](pictures%2FEPG-Demo3.png)
-
------
-### BibTex annotation
-![EPG-Demo4.png](pictures%2FEPG-Demo4.png)
-
-## Useful resources
-
- - [Edit PDFs](https://pdf-lib.js.org/)
- - [Express](https://expressjs.com/de/)
-
 ## TODO
 
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
