@@ -1,10 +1,10 @@
-# Backend for Enhanced Preprint Generator
+# Backend for CiteAssist
 
-The Enhanced Preprint Generator Backend is written in Javascript with Express, a popular Node.js web application framework. This backend provides APIs for the frontend to access the database and generate preprints with related papers and BibTeX annotations.
+CiteAssist Backend is written in Javascript with Express, a popular Node.js web application framework. This backend provides APIs for the frontend to access the database and generate preprints with related papers and BibTeX annotations.
 
 ## Prerequisites
 
-To use the Enhanced Preprint Generator, you must have Node version 16.13.0 or higher installed on your machine.
+To use CiteAssist, you must have Node version 16.13.0 or higher installed on your machine.
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ The backend will start running on port 9000 by default. You can access it by nav
 Alternatively, you can use PM2 to run the backend as a process in the background. To do this, simply run the following command:
 
 ```
-pm2 start npm --name enhanced-preprint-generator-backend -- start 
+pm2 start npm --name citeassist -- start 
 ```
 
 This will start the backend and run it as a background process.
@@ -39,7 +39,7 @@ The backend uses a `config.json` file to store configuration parameters. The fol
 
 ## Endpoints
 
-The Enhanced Preprint Generator Backend provides the following endpoints:
+CiteAssist Backend provides the following endpoints:
 
 - ``POST /database/storePreprint``: Store a preprint in the database with its related papers and BibTeX annotation.
 - ``GET /database/getRelatedPreprints``: Retrieve related preprints for a given preprint ID from the database.
@@ -47,7 +47,7 @@ The Enhanced Preprint Generator Backend provides the following endpoints:
 
 ## Contributing
 
-We welcome contributions to the Enhanced Preprint Generator Backend! If you find a bug, have a feature request, or would like to contribute code, please open an issue or pull request on this repository.
+We welcome contributions to CiteAssist Backend! If you find a bug, have a feature request, or would like to contribute code, please open an issue or pull request on this repository.
 
 ## License
 
