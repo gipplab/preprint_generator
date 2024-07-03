@@ -46,8 +46,8 @@ export function generateLatexSty(acronym: string | null) {
         "      }\n" +
         "    };\n" +
         (acronym ? "    \\node[anchor=north west, inner sep=10pt] at (current page.north west) {\n" +
-            `      \\textbf{${acronym}\n` +
-            "    };" : "") +
+            `      \\textbf{${acronym}}\n` +
+            "    };\n" : "") +
         "  \\end{tikzpicture}\n" +
         "}\n" +
         "\n" +
