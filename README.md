@@ -5,10 +5,10 @@
   <p align="center">
     CiteAssist generates preprints, suggests related papers, and adds BibTeX annotation to the PDF <br />
     <p align="center">
-  <a href="https://github.com/gipplab/preprint_generator/actions"><img src="https://github.com/lkaesberg/EmailVerify/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
-  <a href="https://github.com/gipplab/preprint_generator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lkaesberg/EmailVerify" alt="License"></a>
-  <a href="https://github.com/gipplab/preprint_generator/network/members"><img src="https://img.shields.io/github/forks/lkaesberg/EmailVerify?style=social" alt="GitHub forks"></a>
-  <a href="https://github.com/gipplab/preprint_generator/stargazers"><img src="https://img.shields.io/github/stars/lkaesberg/EmailVerify?style=social" alt="GitHub stars"></a>
+  <a href="https://github.com/gipplab/preprint_generator/actions"><img src="https://github.com/gipplab/preprint_generator/actions/workflows/main.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://github.com/gipplab/preprint_generator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gipplab/preprint_generator" alt="License"></a>
+  <a href="https://github.com/gipplab/preprint_generator/network/members"><img src="https://img.shields.io/github/forks/gipplab/preprint_generator?style=social" alt="GitHub forks"></a>
+  <a href="https://github.com/gipplab/preprint_generator/stargazers"><img src="https://img.shields.io/github/stars/gipplab/preprint_generator?style=social" alt="GitHub stars"></a>
 </p>
     <p>
     <a href="https://github.com/gipplab/preprint_generator/issues">Report Bug</a>
