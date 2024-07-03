@@ -277,7 +277,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             })
         }
         if (latex) {
-            downloadLatexFiles(text, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)), upload)
+            downloadLatexFiles(text, bibTexEntries.url || url, bibTexEntries.confacronym, similarPreprints.map((preprint) => relatedPaperToString(preprint)), upload)
         } else {
             saveByteArray(this.state.file!.name, bytes);
         }
