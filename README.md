@@ -52,7 +52,7 @@ This project is licensed under the MIT License. Please refer to the [LICENSE](CO
 If you use this software, please cite it using the following BibTeX entry:
 
 ```bibtex
-@software{Kaesberg_CiteAssist_A_System_2024,
+@software{kaesberg2024,
   author = {Kaesberg, Lars Benedikt and Ruas, Terry and Wahle, Jan Philip and Gipp, Bela},
   license = {MIT},
   month = jul,
