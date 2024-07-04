@@ -47,6 +47,21 @@ We welcome contributions to CiteAssist! If you encounter a bug, have a feature r
 
 This project is licensed under the MIT License. Please refer to the [LICENSE](COPYING) file for more information.
 
+## Citation
+
+If you use this software, please cite it using the following BibTeX entry:
+
+```bibtex
+@software{Kaesberg_CiteAssist_A_System_2024,
+  author = {Kaesberg, Lars Benedikt and Ruas, Terry and Wahle, Jan Philip and Gipp, Bela},
+  license = {MIT},
+  month = jul,
+  title = {{CiteAssist: A System for Automated Preprint Citation and BibTeX Generation}},
+  version = {1.0},
+  year = {2024}
+}
+```
+
 ## TODO
 
 - [ ] use [compromise](https://www.npmjs.com/package/compromise) for nlp keyword detection
