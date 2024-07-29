@@ -1,8 +1,8 @@
 import {PDFFile} from "./PDFParser";
-import {BibTexEntry, PDFFileForm} from "./PDFFileForm";
+import {BibTexEntry} from "./PDFFileForm";
 import React, {useState} from "react";
 
-import {arxivid2doi, doi2bib, RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
+import {arxivid2doi, doi2bib, RelatedPaperInfo} from "../annotation/AnnotationAPI";
 import {requestPreprints} from "../EnhancedPreprintGenerator";
 import {Input} from '../components/ui/Input';
 import {Button} from '../components/ui/Button';
@@ -17,6 +17,7 @@ import {Badge} from '../components/ui/Badge';
 import "../output.css"
 import {Separator} from "../components/ui/Seperator";
 import {parseBibTex} from "../annotation/AnnotationParser";
+import {useMediaQuery} from "react-responsive";
 
 // const Transition = React.forwardRef(function Transition(
 //     props: TransitionProps & {
@@ -260,10 +261,13 @@ export function PDFInfoForm(props: {
         return !isNaN(parseFloat(value)) && isFinite(parseFloat(value));
     }
 
+    // @ts-ignore
+    const isMobile = useMediaQuery({maxWidth: 768});
+
 
     return <>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-4 bg-cyan-300">
+            <TabsList className={`grid w-full  mb-4 bg-cyan-300 ${(isMobile) ? "h-44 grid-rows-5" : "grid-cols-5"}`}>
                 <TabsTrigger value="basic" className="relative">
                     Basic Info
                     <RequiredBadge/>
