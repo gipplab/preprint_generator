@@ -1,26 +1,24 @@
 import React, {Component} from 'react';
 import './EnhancedPreprintGenerator.css';
+import './styles/globals.css';
 import {PDFDocument} from 'pdf-lib'
 import {parsePDF, PDFFile} from "./pdf/PDFParser";
 import {createBibTexAnnotation} from "./pdf/PDFBibTexAnnotationGenerator";
-import {createTheme, ThemeProvider} from '@mui/material/styles';
-import {EnhancedPreprintGeneratorAppBar} from "./EnhancedPreprintGeneratorAppBar";
 import {PDFFileUploader} from "./pdf/PDFFileUploader";
 import {PDFInfoForm} from "./pdf/PDFInfoForm";
 import {RelatedPaperInfo, relatedPaperToString} from "./annotation/AnnotationAPI"
 import {v4 as uuidv4} from 'uuid';
 import config from "./config.json"
-import darkTheme from "./theme";
 import {downloadLatexFiles} from "./latex/GenerateLatexFiles";
 import {
     Button,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle
+    CircularProgress
 } from "@mui/material";
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "./components/ui/Card";
+import {RefreshCw, Wifi, WifiOff} from "lucide-react";
+import {Alert, AlertDescription} from "./components/ui/Alert";
+import GitHubIcon from '@mui/icons-material/GitHub';
+import ArticleIcon from "@mui/icons-material/Article";
 
 const backendURL = process.env.REACT_APP_BACKEND_URL || config.backend_url;
 
@@ -34,7 +32,6 @@ interface AppState {
     file?: PDFFile;
     loading: boolean;
     latex: boolean;
-    uploadDialog: boolean;
     bibTexEntries: { [p: string]: string };
     keywords: string[];
     similarPreprints: RelatedPaperInfo[];
@@ -104,7 +101,6 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             apiConnected: false,
             loading: false,
             latex: false,
-            uploadDialog: false,
             bibTexEntries: {},
             keywords: [],
             similarPreprints: []
@@ -160,91 +156,101 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
 
     render() {
         return (
-            <ThemeProvider theme={darkTheme}>
-                <div className="App">
-                    <EnhancedPreprintGeneratorAppBar
-                        file={this.state.file} apiConnected={this.state.apiConnected}
-                        onClick={() => {
-                            this.setState({file: undefined, uploadDialog: false})
-                        }}
-                    />
-                    <header className="App-header" style={(this.state.file ? {} : {justifyContent: "center"})}>
-                        {(!this.state.file && !this.state.loading) &&
-                            <PDFFileUploader handleChange={async (file: File) => {
-                                this.setState({loading: true})
-                                let base64File = await toBase64(file)
-                                let pdfDoc = await PDFDocument.load(base64File)
-                                const pdfText = await getPDFText(base64File);
-                                const info = await parsePDF(file, pdfDoc, pdfText, file.name)
-                                let pdfFile: PDFFile = {
-                                    name: file.name,
-                                    file: pdfDoc,
-                                    info: info
-                                }
-                                this.setState({
-                                    file: pdfFile,
-                                    loading: false
-                                })
-                            }}/>
-                        }
-                        {this.state.loading &&
-                            <CircularProgress/>
-                        }
-                        {(this.state.file && !this.state.loading) &&
-                            <PDFInfoForm file={this.state.file}
-                                         onSubmitPDF={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                             bibTexEntries,
-                                             keywords,
-                                             similarPreprints,
-                                             latex: false,
-                                             uploadDialog: true
-                                         })}
-                                         onSubmitLatex={(bibTexEntries, keywords, similarPreprints) => this.setState({
-                                             bibTexEntries,
-                                             keywords,
-                                             similarPreprints,
-                                             latex: true,
-                                             uploadDialog: true
-                                         })}/>
-                        }
-                        <Dialog
-                            open={this.state.uploadDialog}
-                            onClose={() => this.setState({uploadDialog: false})}
-                            aria-labelledby="alert-dialog-title"
-                            aria-describedby="alert-dialog-description"
-                        >
-                            <DialogTitle id="alert-dialog-title">
-                                {"Upload Preprint to Online Repository?"}
-                            </DialogTitle>
-                            <DialogContent>
-                                <DialogContentText id="alert-dialog-description">
-                                    Would you like to upload your preprint to our online repository? Uploading allows
-                                    your document to be accessible online and suggested as related literature to others.
-                                    If you choose not to upload, the document will not be available online or suggested
-                                    to other users.
-                                </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    onClick={async () => {
-                                        this.setState({uploadDialog: false})
-                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, true)
-                                    }}
-                                    autoFocus>
-                                    Agree
-                                </Button>
-                                <Button
-                                    onClick={async () => {
-                                        this.setState({uploadDialog: false})
-                                        await this.OnGeneration(this.state.bibTexEntries, this.state.keywords, this.state.similarPreprints, this.state.latex, false)
-                                    }}>Disagree</Button>
-                            </DialogActions>
-                        </Dialog>
-                    </header>
-                </div>
-            </ThemeProvider>
-        )
-            ;
+            <div className="min-h-screen flex items-center justify-center overflow-y-auto">
+                <Card className="w-1/2 min-w-fit mx-auto bg-white shadow-2xl border border-indigo-100">
+                    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-lg">
+                        <CardTitle className="font-bold text-center text-white text-3xl">CiteAssist</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <Button onClick={() => {
+                                this.setState({file: undefined})
+                            }} className="flex items-center gap-2 hover:bg-gray-100">
+                                <RefreshCw size={16}/>
+                                RESET
+                            </Button>
+                            {
+                                this.state.file && <div>{this.state.file.name}</div>
+                            }
+
+                            <div
+                                className={`flex items-center gap-2 ${this.state.apiConnected ? 'text-green-500' : 'text-red-500'}`}>
+                                {this.state.apiConnected ? <Wifi size={16}/> : <WifiOff size={16}/>}
+                                <span className="font-medium">
+                              {this.state.apiConnected ? "Connected" : "Disconnected"}
+                            </span>
+                            </div>
+                        </div>
+
+                        {!this.state.file && !this.state.loading && (
+                            <div className="flex justify-center items-center flex-col">
+                                <PDFFileUploader handleChange={async (file: File) => {
+                                    this.setState({loading: true})
+                                    let base64File = await toBase64(file)
+                                    let pdfDoc = await PDFDocument.load(base64File)
+                                    const pdfText = await getPDFText(base64File);
+                                    const info = await parsePDF(file, pdfDoc, pdfText, file.name)
+                                    let pdfFile: PDFFile = {
+                                        name: file.name,
+                                        file: pdfDoc,
+                                        info: info
+                                    }
+                                    this.setState({
+                                        file: pdfFile,
+                                        loading: false
+                                    })
+                                }}/>
+                            </div>
+                        )}
+
+                        {this.state.loading && (
+                            <div className="flex justify-center items-center h-64">
+                                <CircularProgress/>
+                            </div>
+                        )}
+
+                        {this.state.file && !this.state.loading && (
+                            <PDFInfoForm
+                                file={this.state.file}
+                                onSubmit={async (bibTexEntries, keywords, similarPreprints, latex, upload) => await this.OnGeneration(bibTexEntries, keywords, similarPreprints, latex, upload)
+                                }/>
+                        )}
+
+
+                        {!this.state.apiConnected && (
+                            <Alert variant="destructive" className="mt-6">
+                                <AlertDescription>
+                                    Unable to connect to the backend. Some features may be unavailable.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                    <CardFooter className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-200">
+                        <div className="w-full flex justify-between items-center text-sm text-gray-600">
+                            <span>© 2024 GippLab</span>
+                            <a
+                                href="https://arxiv.org/abs/2407.03192"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+                            >
+                                <ArticleIcon/>
+                                View on arXiv
+                            </a>
+                            <a
+                                href="https://github.com/gipplab/preprint_generator"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+                            >
+                                <GitHubIcon/>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+        );
     }
 
     private async OnGeneration(bibTexEntries: {
@@ -281,7 +287,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
             })
         }
         if (latex) {
-            downloadLatexFiles(text, url, similarPreprints.map((preprint) => relatedPaperToString(preprint)), upload)
+            downloadLatexFiles(text, bibTexEntries.url || url, bibTexEntries.confacronym, similarPreprints.map((preprint) => relatedPaperToString(preprint)), upload)
         } else {
             saveByteArray(this.state.file!.name, bytes);
         }

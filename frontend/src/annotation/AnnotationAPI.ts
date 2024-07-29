@@ -37,32 +37,47 @@ function doi2bibOptions(doi: string) {
 }
 
 export async function doi2bib(doi_id: string): Promise<RelatedPaperInfo | null> {
+    console.log(doi_id)
     const doiOptions = doi2bibOptions(doi_id)
     let text: string
     try {
-        const res = await fetch(doiOptions.url, {headers: doiOptions.headers})
-        text = await res.text()
-    } catch (_) {
-        return null
+        const res = await fetch(doiOptions.url, {headers: doiOptions.headers});
+        console.log(res);
+
+        // Check if the response was redirected
+        if (res.redirected) {
+            const redirectedRes = await fetch(res.url, {headers: doiOptions.headers});
+            text = await redirectedRes.text();
+        } else {
+            text = await res.text();
+        }
+        console.log(text);  // Log the BibTeX entry
+    } catch (error) {
+        console.error('Error fetching BibTeX:', error);
+        return null;
     }
-    const titleRes = text.match(/title = {(.+)},/)
-    const authorRes = text.match(/author = {(.+)},/)
-    const urlRes = text.match(/url = {(.+)},/)
-    const doiRes = text.match(/doi = {(.+)},/)
-    const yearRes = text.match(/year = {(.+)},/)
-    const title = (titleRes) ? (((titleRes.length > 1) ? titleRes[1] : "Error")) : "Error"
-    if (title == "Error") {
-        return null
+    const titleMatch = text.match(/title\s*=\s*{([^}]+)}/);
+    const authorMatch = text.match(/author\s*=\s*{([^}]+)}/);
+    const urlMatch = text.match(/url\s*=\s*{([^}]+)}/);
+    const doiMatch = text.match(/doi\s*=\s*{([^}]+)}/);
+    const yearMatch = text.match(/year\s*=\s*{([^}]+)}/);
+
+    if (!titleMatch) {
+        console.error('Error fetching BibTeX: Title not found');
+        return null;
     }
-    const author = (authorRes) ? (((authorRes.length > 1) ? authorRes[1] : undefined)) : undefined
-    const url = (urlRes) ? (((urlRes.length > 1) ? urlRes[1] : undefined)) : undefined
-    const doi = (doiRes) ? (((doiRes.length > 1) ? doiRes[1] : undefined)) : undefined
-    const year = (yearRes) ? (((yearRes.length > 1) ? yearRes[1] : undefined)) : undefined
-    return {author: author, doi: doi, title: title, url: url, year: year}
+
+    const title = titleMatch[1];
+    const author = authorMatch ? authorMatch[1] : undefined;
+    const url = urlMatch ? urlMatch[1] : undefined;
+    const doi = doiMatch ? doiMatch[1] : undefined;
+    const year = yearMatch ? yearMatch[1] : undefined;
+
+    return { title, author, url, doi, year };
 }
 
 function arxivid2doiOptions(arxivid: string) {
-    var options = {
+    const options = {
         url: 'https://export.arxiv.org/api/query?id_list=' + arxivid
     };
     return options;
