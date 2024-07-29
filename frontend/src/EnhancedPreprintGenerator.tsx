@@ -157,7 +157,7 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
     render() {
         return (
             <div className="min-h-screen flex items-center justify-center overflow-y-auto">
-                <Card className="w-full max-w-5xl mx-auto bg-white shadow-xl border border-indigo-100">
+                <Card className="w-1/2 min-w-fit mx-auto bg-white shadow-2xl border border-indigo-100">
                     <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-t-lg">
                         <CardTitle className="font-bold text-center text-white text-3xl">CiteAssist</CardTitle>
                     </CardHeader>

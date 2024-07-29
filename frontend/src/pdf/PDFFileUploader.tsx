@@ -8,7 +8,7 @@ export function PDFFileUploader(props: { handleChange: (file: any) => Promise<vo
     return (
         <>
             <h2 className="text-xl font-semibold mb-4 text-indigo-800">Drag & Drop a preprint PDF to enhance it! </h2>
-            <FileUploader classes="min-h-48 w-96 bg-cyan-100" handleChange={props.handleChange} name="file"
+            <FileUploader classes="min-h-48 w-80 bg-cyan-100" handleChange={props.handleChange} name="file"
 
                           types={fileTypes}/>
 
