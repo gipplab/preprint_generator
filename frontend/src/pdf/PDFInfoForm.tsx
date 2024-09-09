@@ -296,7 +296,7 @@ export function PDFInfoForm(props: {
                             setArtTypeError(false)
                         }}>
                             <SelectTrigger className={`w-full ${artTypeError ? 'border-red-500' : ''}`}>
-                                <SelectValue placeholder="Article Type"/>
+                                <SelectValue placeholder="Please select your article type"/>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="article">Journal article</SelectItem>
@@ -590,8 +590,9 @@ export function PDFInfoForm(props: {
                         newEntries = newEntries.filter((entry) => {
                             return (["type", "year", "month", "ref", "author", "title"].indexOf(entry.tag) === -1)
                         })
-
-                        setPublishDate(new Date(`${month}/01/${year}`))
+                        if (year) {
+                            setPublishDate(new Date(`${month || "02"}/01/${year}`))
+                        }
 
                         newEntries.map((entry) => {
                             const simEntry = Object.entries(bibTexEntries).find(([key, value]) => {
