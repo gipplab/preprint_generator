@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Cite Assist",
+  "name": "Welcome to CiteAssist: Streamline your research with fast, accurate BibTeX annotations for PDFs. Simplify your citation process today!",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,15 +8,10 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "gipplab.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "360x360"
     },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
   ],
   "start_url": ".",
   "display": "standalone",
