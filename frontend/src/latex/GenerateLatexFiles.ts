@@ -1,8 +1,6 @@
-import {generateLatexSty} from "./LatexSty";
+import {latexSty} from "./LatexSty";
 import {latexMD} from "./LatexMD";
 import {generateLatexTex} from "./LatexTex";
-import JSZip from 'jszip';
-import {saveAs} from 'file-saver';
 
 function downloadFileFromText(content: string, filename: string): void {
     const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
@@ -14,18 +12,13 @@ function downloadFileFromText(content: string, filename: string): void {
     document.body.removeChild(downloadLink);
 }
 
-export function downloadLatexFiles(annotation: string, link: string, conferenceAcronym: string | null, relatedPapers: string[], onlineLink: boolean = true): void {
-    const styText = generateLatexSty(conferenceAcronym);
-    const texText = generateLatexTex(annotation, link, relatedPapers, onlineLink);
-    const mdText = latexMD;
+// Example usage
+export function downloadLatexFiles(annotation: string, link: string, relatedPapers: string[], onlineLink: boolean = true): void {
+    const styText = latexSty
+    const texText = generateLatexTex(annotation, link, relatedPapers, onlineLink)
+    const mdText = latexMD
 
-    const zip = new JSZip();
-    zip.file('annotation.sty', styText);
-    zip.file('annotation.tex', texText);
-    zip.file('instructions.md', mdText);
-
-    zip.generateAsync({type: 'blob'})
-        .then(function (blob) {
-            saveAs(blob, 'latex_files.zip');
-        });
+    downloadFileFromText(styText, 'annotation.sty');
+    downloadFileFromText(texText, 'annotation.tex');
+    downloadFileFromText(mdText, 'instructions.md');
 }

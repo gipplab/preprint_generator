@@ -1,4 +1,4 @@
-import {PDFDocument, PDFFont, PDFName, StandardFonts} from 'pdf-lib';
+import {PDFDocument, PDFName} from 'pdf-lib';
 import {jsPDF} from 'jspdf';
 import {RelatedPaperInfo, relatedPaperToString} from "../annotation/AnnotationAPI";
 import unidecode from "unidecode";
@@ -12,33 +12,32 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
         unit: 'pt',
         format: [size.width, size.height]
     });
-
     const leftMargin = 50;
-    let topMargin = 50;
+    var topMargin = 50;
     const pageWidth = pdf.internal.pageSize.getWidth();
 
     // Header Title
-    pdf.setFontSize(20);
-    pdf.setFont('modern', 'bold');
-    pdf.text('Citation for this Paper', size.width / 2, topMargin, {align: "center"});
+    pdf.setFontSize(25);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Citation for this Paper', leftMargin, topMargin);
 
     // Online Version Link
     pdf.setFontSize(12);
     pdf.setTextColor("#0000EE")
-    pdf.setFont('modern', 'normal');
+    pdf.setFont('helvetica', 'normal');
     const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
     const url = `${baseUrl}/preprint/${uuid}`;
-    if (onlineLink || bibTexEntries.url) {
-        topMargin += 20
-        pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: bibTexEntries.url || url});
+    if (onlineLink) {
+        topMargin += 30
+        pdf.textWithLink('Click here for the Online Version', leftMargin, topMargin, {url: url});
     }
 
     // Citation Box
-    const citationStartY = topMargin + 15;
-    const citationBoxPadding = 25;
+    const citationStartY = topMargin + 20;
+    const citationBoxPadding = 40;
     pdf.setFont('courier', 'normal');
     pdf.setTextColor("#000000")
-    pdf.setFontSize(8);
+    pdf.setFontSize(12);
 
     let bibAnnotationText = `@${bibTexEntries["artType"]}{${bibTexEntries["ref"]}`
     delete bibTexEntries["artType"]
@@ -54,9 +53,7 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     const linesBibtex: string[] = pdf.splitTextToSize(bibAnnotationText, pageWidth - 2 * leftMargin - 2 * citationBoxPadding);
     const filteredLinesBibtex = linesBibtex.map(s => unidecode(s))
 
-    console.log(pdf.getLineHeightFactor())
-    console.log(pdf.getLineHeight())
-    const citationBoxHeight = (filteredLinesBibtex.length - 1) * pdf.getLineHeight() + 2 * citationBoxPadding;
+    const citationBoxHeight = filteredLinesBibtex.length * 12 * 1.1 + 2 * citationBoxPadding;
 
     const cornerRadius = 20; // Radius of the rounded corners
     pdf.roundedRect(leftMargin, citationStartY, pageWidth - 2 * leftMargin, citationBoxHeight, cornerRadius, cornerRadius);
@@ -67,23 +64,22 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
     }
 
     // Related Papers Section
-    const relatedPapersStartY = citationStartY + citationBoxHeight + 30;
-    pdf.setFontSize(13);
-    pdf.setFont('modern', 'bold');
+    const relatedPapersStartY = citationStartY + citationBoxHeight + 50;
+    pdf.setFont('helvetica', 'bold');
     pdf.text('Related Papers', leftMargin, relatedPapersStartY);
 
-    pdf.setFontSize(10);
-    pdf.setFont('modern', 'normal');
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
 
-    let currentY = relatedPapersStartY + 20; // Initial Y position for the first related paper
-    const lineHeight = pdf.getLineHeight(); // Adjust based on your font size and line spacing
+    let currentY = relatedPapersStartY + 50; // Initial Y position for the first related paper
+    const lineHeight = 10; // Adjust based on your font size and line spacing
 
     similarPreprints.forEach((preprint, index) => {
         const preprintText = `${index + 1}) ${relatedPaperToString(preprint)}\n\n`;
         const lines: string[] = pdf.splitTextToSize(preprintText, pageWidth - 2 * leftMargin);
 
         const filteredLines = lines.map(s => unidecode(s))
-        const blockHeight = (filteredLines.length - 1) * lineHeight;
+        const blockHeight = filteredLines.length * lineHeight;
 
         // Print the text without making it a link
         pdf.text(filteredLines, leftMargin, currentY);
@@ -104,7 +100,7 @@ function createCitationPDF(uuid: string, size: { width: number, height: number }
 }
 
 
-async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuffer, conferenceAcronym: string | null = null): Promise<PDFDocument> {
+async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuffer): Promise<PDFDocument> {
     const citationPdfDoc = await PDFDocument.load(citationPdfBytes);
     originalPdfDoc.getPageCount();
 // Merge the PDFs
@@ -122,22 +118,13 @@ async function mergePDFs(originalPdfDoc: PDFDocument, citationPdfBytes: ArrayBuf
     const buttonHeight = 201 * buttonScale;  // Set the button height
     const buttonX = width - buttonWidth - 10;  // Position the button X pixels from the right edge
     const buttonY = height - buttonHeight - 10;  // Position the button Y pixels from the bottom edge
-    const courierFont = await originalPdfDoc.embedFont(StandardFonts.CourierBold)
+
     firstPage.drawImage(buttonImage, {
         x: buttonX,
         y: buttonY,
         width: buttonWidth,
         height: buttonHeight
     })
-    if (conferenceAcronym) {
-        firstPage.drawText(conferenceAcronym, {
-            x: 10,
-            y: height - 20,
-            size: 10,
-            font: courierFont,
-
-        })
-    }
     let link = originalPdfDoc.context.register(
         originalPdfDoc.context.obj({
             Type: 'Annot',
@@ -173,7 +160,7 @@ export async function createBibTexAnnotation(file: PDFDocument, uuid: string, bi
     const bibTexBytes = citation.pdf
 
     // Merge the new citation PDF with the original PDF
-    let pdfBytes = await mergePDFs(file, bibTexBytes, bibTexEntries.confacronym);
+    let pdfBytes = await mergePDFs(file, bibTexBytes);
 
     // Return the annotation text (or modify as per your requirement)
     return {text: bibTexText, bytes: await pdfBytes.save()};
