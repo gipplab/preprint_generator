@@ -1,10 +1,13 @@
 import {Button, Chip, Grid,} from '@mui/material';
 import React, {useState} from 'react';
 import {PDFInfo} from "./PDFParser";
+import {GenerateButton} from "../inputComponents/GenerateButton";
 import {EntryFieldGenerator} from "../inputComponents/EntryFieldGenerator";
 import {EntryInputField} from "../inputComponents/EntryInputField";
 import {PublishDateSelector} from "../inputComponents/PublishDateSelector";
 import {ArticleTypeSelect} from "../inputComponents/ArticleTypeSelect";
+import BibTexEntryDialog from "../annotation/AnnotationParserButton";
+import {Bibliography} from "@retorquere/bibtex-parser";
 
 interface PDFFileFormInterface {
     info: PDFInfo
@@ -209,6 +212,13 @@ export function PDFFileForm(props: PDFFileFormInterface) {
                                    label={suggestion.tag}/>
                             ))}
                     </div>
+
+                    <BibTexEntryDialog
+                        open={isBibTexDialogOpen}
+                        onClose={handleBibTexDialogClose}
+                        onParseBibtex={handleAddBibTexEntry}
+                    />
+
                 </div>
             </div>
         </div>

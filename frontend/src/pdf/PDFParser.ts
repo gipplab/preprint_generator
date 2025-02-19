@@ -48,7 +48,7 @@ export async function parsePDF(file: File, pdf: PDFDocument, text: {
     let number
     let journal = grobidData?.journal
     let doi
-    let artTitle = ((author?.split(",")[0].split(" ").slice(-1)[0].toLowerCase()  || title).replace(/\s/g, '')) + date.getFullYear()
+    let artTitle = ((author?.split(",")[0] || title).replace(/\s/g, '')) + date.getFullYear()
     let keywords: string[] = []
     if (grobidData?.keywords){
         grobidData.keywords.forEach((keyword) => keywords.push(keyword))
