@@ -15,7 +15,7 @@ import {
     CircularProgress
 } from "@mui/material";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "./components/ui/Card";
-import {RefreshCw, Wifi, WifiOff} from "lucide-react";
+import {InfoIcon, RefreshCw, Wifi, WifiOff} from "lucide-react";
 import {Alert, AlertDescription} from "./components/ui/Alert";
 import GitHubIcon from '@mui/icons-material/GitHub';
 import ArticleIcon from "@mui/icons-material/Article";
@@ -227,7 +227,15 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                     </CardContent>
                     <CardFooter className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-200">
                         <div className="w-full flex justify-between items-center text-sm text-gray-600">
-                            <span>© 2024 GippLab</span>
+                            <a
+                                href="https://github.com/gipplab/preprint_generator"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+                            >
+                                <GitHubIcon/>
+                                View on GitHub
+                            </a>
                             <a
                                 href="https://arxiv.org/abs/2407.03192"
                                 target="_blank"
@@ -238,14 +246,15 @@ class EnhancedPreprintGenerator extends Component<AppProps, AppState> {
                                 View on arXiv
                             </a>
                             <a
-                                href="https://github.com/gipplab/preprint_generator"
+                                href="/impressum"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
                             >
-                                <GitHubIcon/>
-                                View on GitHub
+                                <InfoIcon/>
+                                Impressum
                             </a>
+
                         </div>
                     </CardFooter>
                 </Card>
